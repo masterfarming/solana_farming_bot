@@ -10,6 +10,24 @@ import requests
 import telebot
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
 import telebot.types as types
+from flask import Flask
+
+app = Flask('')
+
+
+@app.route('/')
+def home():
+  return "Bot is alive!"
+
+
+def run():
+  port = int(os.environ.get('PORT', 5000))
+  app.run(host='0.0.0.0', port=port)
+
+
+def keep_alive():
+  t = Thread(target=run)
+  t.start()
 
 # --- CONFIGURATION ---
 TOKEN = os.environ.get("BOT_TOKEN", "YOUR_BOT_TOKEN_HERE")
@@ -1449,6 +1467,7 @@ if __name__ == "__main__":
 
     Thread(target=roi_worker, daemon=True).start()
     print("Solana Farming Bot is running with Condition-Free Level 1 Override...")
+    keep_alive()
 
     while True:
         try:
