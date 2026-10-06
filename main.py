@@ -1,4 +1,4 @@
-Print(">>> DEBUG: SCRIPT STARTED FROM TOP", flush=True)
+print(">>> DEBUG: SCRIPT STARTED FROM TOP", flush=True)
 import os
 import sqlite3
 from threading import Thread
