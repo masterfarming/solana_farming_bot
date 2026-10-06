@@ -455,9 +455,12 @@ def dashboard_handler(message):
 @bot.message_handler(func=lambda m: m.text == "🏆 Ranks & Royalty")
 def team_ranks(message):
     user_id = message.from_user.id
-    check_and_update_rank(user_id)
+    try:
+        check_and_update_rank(user_id)
+    except Exception as e:
+        print(f"Rank update error: {e}")
     conn = get_db()
-    u = conn.execute("SELECT rank FROM users WHERE user_id=?", (user_id,)).fetchone()
+    u = conn.execute("SELECT rank_name, direct_biz, team_biz FROM users WHERE user_id = ?", (user_id,)).fetchone()
 
     directs_count = len(directs_cursor)
     active_directs = get_active_directs_count(conn, message.from_user.id)
