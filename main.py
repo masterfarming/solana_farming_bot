@@ -452,14 +452,12 @@ def dashboard_handler(message):
     )
     bot.send_message(message.chat.id, text, parse_mode="HTML")
 
-@bot.message_handler(func=lambda m: m.text == "🏆 Ranks & Royalty")
+    @bot.message_handler(func=lambda m: m.text == "🏆 Ranks & Royalty")
 def team_ranks(message):
+    user_id = message.from_user.id
+    check_and_update_rank(user_id)
     conn = get_db()
-    u = conn.execute("SELECT rank FROM users WHERE user_id=?", (message.from_user.id,)).fetchone()
-    directs_cursor = conn.execute(
-        "SELECT user_id, COALESCE(self_farming, 0) FROM users WHERE referrer_id=?",
-        (message.from_user.id,)
-    ).fetchall()
+    u = conn.execute("SELECT rank FROM users WHERE user_id=?", (user_id,)).fetchone()
 
     directs_count = len(directs_cursor)
     active_directs = get_active_directs_count(conn, message.from_user.id)
