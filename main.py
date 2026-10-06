@@ -819,27 +819,29 @@ def queue_admin_topup(admin_id, user_id, amount, note, is_paid=False):
    )
 
 def admin_lookup_user(message):
-  if message.from_user.id != ADMIN_ID:
-    return
-  try:
-    user_id = int(message.text.strip().split()[0])
-    if user_id <= 0:
-      raise ValueError
-  except (ValueError, IndexError):
-    bot.send_message(ADMIN_ID, "❌ <b>Invalid user ID.</b> Open /admin and try Manage User again.", parse_mode="HTML")
-    return
+    if message.from_user.id != ADMIN_ID:
+        return
+    try:
+        if not message.text:
+            raise ValueError
+        user_id = int(message.text.strip().split()[0])
+        if user_id <= 0:
+            raise ValueError
+    except (ValueError, IndexError, AttributeError):
+        bot.send_message(message.chat.id, "❌ <b>Invalid user ID.</b> Open /admin and try Manage User again.", parse_mode="HTML")
+        return
 
-  text = admin_user_text(user_id)
-  if text is None:
-    bot.send_message(
-        ADMIN_ID,
-        f"<b>User ID {user_id} does not exist yet.</b> Use <b>Top-up Free ID</b> if you want to create and credit it.",
-        reply_markup=admin_panel_markup(),
-        parse_mode="HTML",
-    )
-    return
-  bot.send_message(ADMIN_ID, text, reply_markup=admin_user_markup(user_id), parse_mode="HTML")
-
+    text = admin_user_text(user_id)
+    if text is None:
+        bot.send_message(
+            message.chat.id,
+            f"<b>User ID {user_id} does not exist yet.</b>",
+            reply_markup=admin_panel_markup(),
+            parse_mode="HTML",
+        )
+        return
+        
+    bot.send_message(message.chat.id, text, reply_markup=admin_user_markup(user_id), parse_mode="HTML")
 
 def admin_topup_amount(message, user_id):
   if message.from_user.id != ADMIN_ID:
@@ -1270,7 +1272,7 @@ def roi_worker():
                         )
                         conn.commit()
 
-                        # --- 25-LEVEL OVERRIDE BONUS ---
+                                                # --- 25-LEVEL OVERRIDE BONUS ---
                         curr = uid
                         for level_idx, pct in enumerate(OVERRIDE_LEVELS):
                             res = conn.execute("SELECT referrer_id FROM users WHERE user_id=?", (curr,)).fetchone()
@@ -1285,8 +1287,8 @@ def roi_worker():
                                 if actual_direct_biz >= required_direct_biz:
                                     override_bonus = roi * pct
                                     conn.execute(
-                                        "UPDATE users SET balance = balance + ?, total_earned = total_earned + ? WHERE user_id = ?",
-                                        (override_bonus, override_bonus, ref_id)
+                                        "UPDATE users SET balance = balance + ?, total_earned = total_earned + ?, team_farming_override_bonus = COALESCE(team_farming_override_bonus, 0) + ? WHERE user_id = ?",
+                                        (override_bonus, override_bonus, override_bonus, ref_id)
                                     )
                                     conn.commit()
                                 curr = ref_id
@@ -1349,33 +1351,32 @@ def my_team_handler(message):
         bot.send_message(message.chat.id, "👥 You don't have any team members yet.", parse_mode="HTML")
         return
 
-    total_members = len(team_data)
+        total_members = len(team_data)
 
     # Level-wise count and business calculation
     level_counts = {}
     level_business = {}
     for uid, sf, lvl in team_data:
         level_counts[lvl] = level_counts.get(lvl, 0) + 1
-        level_business[lvl] = level_business.get(lvl, 0.0) + sf
+        level_business[lvl] = level_business.get(lvl, 0.0) + float(sf or 0)
 
-        team_text = f"<b>👥 Your 25-Level Team Overview</b>\n\n"
-        team_text += f"<b>• Total Team Members:</b> <code>{total_members}</code>\n\n"
-        team_text += "<b>Click on the levels below to view member details:</b>"
+    team_text = f"<b>👥 Your 25-Level Team Overview</b>\n\n"
+    team_text += f"• <b>Total Team Members:</b> {total_members}\n\n"
+    team_text += f"Click on the levels below to view member details:"
 
-        # Inline buttons banayein
-        markup = types.InlineKeyboardMarkup(row_width=3)
-        buttons = []
+    # Inline buttons banayein
+    markup = types.InlineKeyboardMarkup()
+    buttons = []
 
-        for lvl in sorted(level_counts.keys()):
-            if lvl <= 25:
-                count = level_counts[lvl]
-                buttons.append(types.InlineKeyboardButton(f"Lvl {lvl} ({count})", callback_data=f"view_lvl_{lvl}"))
+    for lvl in sorted(level_counts.keys()):
+        if lvl <= 25:
+            count = level_counts[lvl]
+            buttons.append(types.InlineKeyboardButton(f"Lvl {lvl} ({count})", callback_data=f"view_level_{lvl}"))
 
-        for i in range(0, len(buttons), 3):
-            markup.add(*buttons[i:i+3])
+    for i in range(0, len(buttons), 3):
+        markup.add(*buttons[i:i+3])
 
-        bot.send_message(message.chat.id, team_text, reply_markup=markup, parse_mode="HTML")
-
+    bot.send_message(message.chat.id, team_text, reply_markup=markup, parse_mode="HTML")
 
     # Callback Handler jab user kisi level ke button par click karega
     @bot.callback_query_handler(func=lambda call: call.data.startswith("view_lvl_"))
