@@ -1,4 +1,4 @@
-print(">>> DEBUG: SCRIPT STARTED FROM TOP", flush=True)
+Print(">>> DEBUG: SCRIPT STARTED FROM TOP", flush=True)
 import os
 import sqlite3
 from threading import Thread
@@ -54,18 +54,18 @@ OVERRIDE_LEVELS = [
     0.02, 0.03, 0.05, 0.10, 0.15
 ]
 
-# --- RANKS & ROYALTY ---
+# --- RANKS & ROYALTY (Updated with new names & leg requirements) ---
 RANKS = [
-    {"name": "1 Star Rank", "target": 30, "daily_royalty": 0.03},
-    {"name": "2 Silver Rank", "target": 100, "daily_royalty": 0.10},
-    {"name": "3 Gold Rank", "target": 500, "daily_royalty": 0.50},
-    {"name": "4 Diamond Rank", "target": 1500, "daily_royalty": 1.50},
-    {"name": "5 Galaxy Rank", "target": 5000, "daily_royalty": 5.00},
-    {"name": "6 Super Galaxy Rank", "target": 10000, "daily_royalty": 10.00},
-    {"name": "7 Universe Rank", "target": 20000, "daily_royalty": 20.00},
-    {"name": "8 Crown Rank", "target": 100000, "daily_royalty": 100.00},
-    {"name": "9 Crown Master Rank", "target": 500000, "daily_royalty": 500.00},
-    {"name": "10 Universe Master Rank", "target": 1000000, "daily_royalty": 1000.00},
+    {"level": 1, "name": "Star", "target": 30, "strongest_leg_min": 12, "other_legs_min": 18, "daily_royalty": 0.03},
+    {"level": 2, "name": "Orbit", "target": 100, "strongest_leg_min": 40, "other_legs_min": 60, "daily_royalty": 0.10},
+    {"level": 3, "name": "Solar", "target": 500, "strongest_leg_min": 200, "other_legs_min": 300, "daily_royalty": 0.50},
+    {"level": 4, "name": "SuperNova", "target": 1500, "strongest_leg_min": 600, "other_legs_min": 900, "daily_royalty": 1.50},
+    {"level": 5, "name": "Galaxy", "target": 5000, "strongest_leg_min": 2000, "other_legs_min": 3000, "daily_royalty": 5.00},
+    {"level": 6, "name": "Super Galaxy", "target": 10000, "strongest_leg_min": 4000, "other_legs_min": 6000, "daily_royalty": 10.00},
+    {"level": 7, "name": "Crown", "target": 20000, "strongest_leg_min": 8000, "other_legs_min": 12000, "daily_royalty": 20.00},
+    {"level": 8, "name": "Grand Crown", "target": 100000, "strongest_leg_min": 40000, "other_legs_min": 60000, "daily_royalty": 100.00},
+    {"level": 9, "name": "Universe", "target": 500000, "strongest_leg_min": 200000, "other_legs_min": 300000, "daily_royalty": 500.00},
+    {"level": 10, "name": "Supreme Universe", "target": 1000000, "strongest_leg_min": 400000, "other_legs_min": 600000, "daily_royalty": 1000.00},
 ]
 
 # --- DATABASE SETUP ---
@@ -241,17 +241,14 @@ def update_team_business_recursive(conn, user_id, amount):
       else:
           break
 
-# --- CALCULATE RANK WITH 40:60 RATIO ---
+# --- CALCULATE RANK WITH LEG MINIMUM REQUIREMENTS ---
 def check_and_update_rank(user_id):
     conn = get_db()
     directs = conn.execute(
         "SELECT user_id, total_investment FROM users WHERE referrer_id=?",
         (user_id,),
     ).fetchall()
-    if not directs:
-        conn.close()
-        return
-
+    
     leg_businesses = []
     for d_id, d_inv in directs:
         sub_bus = get_subtree_business(conn, d_id) + d_inv
@@ -259,22 +256,18 @@ def check_and_update_rank(user_id):
 
     leg_businesses.sort(reverse=True)
 
-    if len(leg_businesses) < 2:
-        conn.close()
-        return
-
-    highest_leg = leg_businesses[0]
-    other_legs_total = sum(leg_businesses[1:])
+    strongest_leg = leg_businesses[0] if len(leg_businesses) > 0 else 0
+    other_legs_total = sum(leg_businesses[1:]) if len(leg_businesses) > 1 else 0
     total_team_bus = sum(leg_businesses)
 
     achieved_rank = "None"
     for r in RANKS:
-        req = r["target"]
-        if total_team_bus >= req:
-            cond_high = highest_leg <= (total_team_bus * 0.40)
-            cond_other = other_legs_total >= (total_team_bus * 0.60)
-            if cond_high and cond_other:
-                achieved_rank = r["name"]
+        is_total_met = total_team_bus >= r["target"]
+        is_strongest_met = strongest_leg >= r["strongest_leg_min"]
+        is_other_legs_met = other_legs_total >= r["other_legs_min"]
+
+        if is_total_met and is_strongest_met and is_other_legs_met:
+            achieved_rank = r["name"]
 
     conn.execute(
         "UPDATE users SET rank = ? WHERE user_id = ?",
@@ -344,7 +337,7 @@ def deposit_sol(message):
         f"💰 <b>Deposit SOL</b>\n\n"
         f"Please scan the QR code above or copy the address below to deposit SOL:\n\n"
         f"<code>{wallet_address}</code>\n\n"
-        f"⚠️ <i>Send only SOL to this address.</i>\n\n"
+        f"⚠️️ <i>Send only SOL to this address.</i>\n\n"
         f"📝 <i>After sending, please send your Transaction Hash (TxID) here to activate your ID!</i>"
     )
     sent = bot.send_photo(message.chat.id, photo=qr_url, caption=caption, parse_mode="HTML")
@@ -382,10 +375,12 @@ def process_deposit(message):
     conn.commit()
 
     distribute_commissions(conn, message.from_user.id, amount)
+    update_team_business_recursive(conn, message.from_user.id, amount)
 
     res = conn.execute("SELECT referrer_id FROM users WHERE user_id=?", (message.from_user.id,)).fetchone()
     if res and res[0]:
       check_and_update_rank(res[0])
+    check_and_update_rank(message.from_user.id)
 
     bot.send_message(
         message.chat.id,
@@ -481,38 +476,60 @@ def team_ranks(message):
     other_legs_total = sum(leg_businesses[1:]) if len(leg_businesses) > 1 else 0
 
     current_rank_name = u[0] if u else "None"
-    next_rank_target = 0
-    next_rank_name = "Max Rank Achieved"
-
-    if current_rank_name == "None" and RANKS:
-        next_rank_target = RANKS[0]["target"]
-        next_rank_name = RANKS[0]["name"]
+    
+    # Determine next rank to show progress
+    next_rank = None
+    if current_rank_name == "None":
+        next_rank = RANKS[0]
     else:
         for idx, r in enumerate(RANKS):
             if r["name"] == current_rank_name:
                 if idx + 1 < len(RANKS):
-                    next_rank_target = RANKS[idx + 1]["target"]
-                    next_rank_name = RANKS[idx + 1]["name"]
+                    next_rank = RANKS[idx + 1]
                 break
 
     conn.close()
 
-    req_high_max = next_rank_target * 0.40 if next_rank_target > 0 else 0
-    req_other_min = next_rank_target * 0.60 if next_rank_target > 0 else 0
-    needed_total_biz = max(0, next_rank_target - team_biz) if next_rank_target > 0 else 0
+    if next_rank:
+        next_rank_name = next_rank["name"]
+        target = next_rank["target"]
+        req_strongest = next_rank["strongest_leg_min"]
+        req_other = next_rank["other_legs_min"]
+
+        # Status check with ticks and remaining amounts
+        is_strongest_met = highest_leg >= req_strongest
+        strongest_rem = 0 if is_strongest_met else max(0, req_strongest - highest_leg)
+        strongest_icon = "✅" if is_strongest_met else f"❌ (Need {strongest_rem:.2f} SOL more)"
+
+        is_other_met = other_legs_total >= req_other
+        other_rem = 0 if is_other_met else max(0, req_other - other_legs_total)
+        other_icon = "✅" if is_other_met else f"❌ (Need {other_rem:.2f} SOL more)"
+
+        total_volume = highest_leg + other_legs_total
+        is_total_met = total_volume >= target
+        total_rem = 0 if is_total_met else max(0, target - total_volume)
+        total_icon = "✅" if is_total_met else f"❌ (Need {total_rem:.2f} SOL more)"
+    else:
+        next_rank_name = "Max Rank Achieved 🎉"
+        strongest_icon = "✅"
+        other_icon = "✅"
+        total_icon = "✅"
+        req_strongest = 0
+        req_other = 0
+        target = 0
 
     text = (
         f"🏆 <b>Ranks & Royalty Status</b>\n\n"
-        f"<b>• Total Directs: <code>{directs_count}</code> (Active: <code>{active_directs}</code>)</b>\n"
-        f"<b>• Direct Business: <code>{direct_biz:.2f} SOL</code></b>\n"
-        f"<b>• Total Team Business: <code>{team_biz:.2f} SOL</code></b>\n"
-        f"<b>• Current Rank: <code>{current_rank_name}</code></b>\n"
-        f"<b>• Next Rank: <code>{next_rank_name}</code></b>\n\n"
-        f"<b>🎯 Progress for Next Rank ({next_rank_target} SOL Target):</b>\n"
-        f"<b>• Remaining Total Business: <code>{needed_total_biz:.2f} SOL</code></b>\n\n"
-        f"<b>• 40:60 Ratio Check:</b>\n"
-        f"<b> - Strongest Leg Max (40%): <code>{req_high_max:.2f}</code> SOL (Current: <code>{highest_leg:.2f}</code>)</b>\n"
-        f"<b> - Other Legs Min (60%): <code>{req_other_min:.2f}</code> SOL (Current: <code>{other_legs_total:.2f}</code>)</b>\n\n"
+        f"<b>• Total Directs:</b> <code>{directs_count}</code> (Active: <code>{active_directs}</code>)\n"
+        f"<b>• Direct Business:</b> <code>{direct_biz:.2f} SOL</code>\n"
+        f"<b>• Total Team Business:</b> <code>{team_biz:.2f} SOL</code>\n"
+        f"<b>• Current Rank:</b> <code>{current_rank_name}</code>\n"
+        f"<b>• Next Rank:</b> <code>{next_rank_name}</code>\n\n"
+        f"<b>🎯 Progress for Next Rank:</b>\n"
+        f"<b>• Total Target ({target} SOL):</b> {total_icon} (Current: {highest_leg + other_legs_total:.2f})\n\n"
+        f"<b>• Leg Requirements Check:</b>\n"
+        f"<b> - Strongest Leg (Min {req_strongest} SOL):</b> {strongest_icon} (Current: <code>{highest_leg:.2f}</code>)\n"
+        f"<b> - Other Legs Combined (Min {req_other} SOL):</b> {other_icon} (Current: <code>{other_legs_total:.2f}</code>)\n"
     )
     bot.send_message(message.chat.id, text, parse_mode="HTML")
 
@@ -912,8 +929,8 @@ def roi_worker():
 
                         total_payout = roi + royalty
                         conn.execute(
-                            "UPDATE users SET balance = balance + ?, total_earned = total_earned + ?, self_farming_bonus = self_farming_bonus + ? WHERE user_id=?",
-                            (total_payout, total_payout, roi, uid),
+                            "UPDATE users SET balance = balance + ?, total_earned = total_earned + ?, self_farming_bonus = self_farming_bonus + ?, rank_royalty_bonus = rank_royalty_bonus + ? WHERE user_id=?",
+                            (total_payout, total_payout, roi, royalty, uid),
                         )
                         conn.commit()
 
@@ -940,7 +957,7 @@ def roi_worker():
         except Exception as e:
             print(f">>> DEBUG: ROI Worker Error -> {e}")
 
-        time.sleep(300) # 5 Minutes sleep for testing
+        time.sleep(300)
 
 @bot.message_handler(func=lambda m: m.text == "🔗 Referral Link")
 def referral_link_handler(message):
@@ -949,7 +966,7 @@ def referral_link_handler(message):
     text = f"<b>🔗 Your Referral Link</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>"
     bot.send_message(message.chat.id, text, parse_mode="HTML")
 
-# --- TEAM MEMBERS HANDLERS (GLOBAL CALLBACK) ---
+# --- TEAM MEMBERS HANDLERS ---
 @bot.message_handler(func=lambda m: m.text == "👥 Team Members")
 def my_team_handler(message):
     conn = get_db()
