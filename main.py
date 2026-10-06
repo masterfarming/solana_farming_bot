@@ -103,7 +103,8 @@ def init_db():
         rank_royalty_earned REAL DEFAULT 0,
         rank_royalty_bonus REAL DEFAULT 0,
         max_cap REAL DEFAULT 0,
-        plan_name TEXT
+        plan_name TEXT,
+        total_team_business REAL DEFAULT 0
     )""")
 
     c.execute("""CREATE TABLE IF NOT EXISTS transactions (txid TEXT PRIMARY KEY)""")
@@ -337,7 +338,7 @@ def deposit_sol(message):
         f"💰 <b>Deposit SOL</b>\n\n"
         f"Please scan the QR code above or copy the address below to deposit SOL:\n\n"
         f"<code>{wallet_address}</code>\n\n"
-        f"⚠️️ <i>Send only SOL to this address.</i>\n\n"
+        f"⚠ <i>Send only SOL to this address.</i>\n\n"
         f"📝 <i>After sending, please send your Transaction Hash (TxID) here to activate your ID!</i>"
     )
     sent = bot.send_photo(message.chat.id, photo=qr_url, caption=caption, parse_mode="HTML")
@@ -459,13 +460,18 @@ def team_ranks(message):
         check_and_update_rank(user_id)
     except Exception as e:
         print(f"Rank update error: {e}")
+
     conn = get_db()
-    u = conn.execute("SELECT rank_name, direct_biz, team_biz FROM users WHERE user_id = ?", (user_id,)).fetchone()
+    u = conn.execute("SELECT rank FROM users WHERE user_id=?", (user_id,)).fetchone()
+    directs_cursor = conn.execute(
+        "SELECT user_id, COALESCE(self_farming, 0) FROM users WHERE referrer_id=?",
+        (user_id,)
+    ).fetchall()
 
     directs_count = len(directs_cursor)
-    active_directs = get_active_directs_count(conn, message.from_user.id)
+    active_directs = get_active_directs_count(conn, user_id)
     direct_biz = sum([d[1] for d in directs_cursor])
-    team_biz = get_total_team_business(conn, message.from_user.id)
+    team_biz = get_total_team_business(conn, user_id)
 
     leg_businesses = []
     for d_id, d_inv in directs_cursor:
@@ -476,7 +482,7 @@ def team_ranks(message):
     highest_leg = leg_businesses[0] if len(leg_businesses) > 0 else 0
     other_legs_total = sum(leg_businesses[1:]) if len(leg_businesses) > 1 else 0
 
-    current_rank_name = u[0] if u else "None"
+    current_rank_name = u[0] if u and u[0] else "None"
     
     # Determine next rank to show progress
     next_rank = None
