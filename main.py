@@ -452,7 +452,7 @@ def dashboard_handler(message):
     )
     bot.send_message(message.chat.id, text, parse_mode="HTML")
 
-    @bot.message_handler(func=lambda m: m.text == "🏆 Ranks & Royalty")
+@bot.message_handler(func=lambda m: m.text == "🏆 Ranks & Royalty")
 def team_ranks(message):
     user_id = message.from_user.id
     check_and_update_rank(user_id)
