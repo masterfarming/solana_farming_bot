@@ -112,6 +112,10 @@ def init_db():
         c.execute("ALTER TABLE users ADD COLUMN last_withdrawal_date TEXT")
     except sqlite3.OperationalError:
         pass
+    try:
+        c.execute("ALTER TABLE users ADD COLUMN language TEXT DEFAULT 'en'")
+    except sqlite3.OperationalError:
+        pass
 
     c.execute("""CREATE TABLE IF NOT EXISTS transactions (txid TEXT PRIMARY KEY)""")
 
@@ -139,6 +143,78 @@ def init_db():
     conn.close()
 
 init_db()
+
+# 10 Global Languages Translations Dictionary
+translations = {
+    "en": {
+        "select_lang": "🌐 Please select your language:",
+        "lang_changed": "✅ Language updated to English!",
+        "dashboard": "👤 User Dashboard"
+    },
+    "ru": {
+        "select_lang": "🌐 Пожалуйста, выберите язык:",
+        "lang_changed": "✅ Язык успешно изменен на русский!",
+        "dashboard": "👤 Панель пользователя"
+    },
+    "zh": {
+        "select_lang": "🌐 请选择您的语言：",
+        "lang_changed": "✅ 语言已更新为中文！",
+        "dashboard": "👤 用户面板"
+    },
+    "vi": {
+        "select_lang": "🌐 Vui lòng chọn ngôn ngữ của bạn:",
+        "lang_changed": "✅ Đã cập nhật ngôn ngữ thành Tiếng Việt!",
+        "dashboard": "👤 Bảng điều khiển"
+    },
+    "id": {
+        "select_lang": "🌐 Silakan pilih bahasa Anda:",
+        "lang_changed": "✅ Bahasa berhasil diubah ke Bahasa Indonesia!",
+        "dashboard": "👤 Dashboard Pengguna"
+    },
+    "th": {
+        "select_lang": "🌐 กรุณาเลือกภาษาของคุณ:",
+        "lang_changed": "✅ เปลี่ยนภาษาเป็นภาษาไทยเรียบร้อยแล้ว!",
+        "dashboard": "👤 แดชบอร์ดผู้ใช้"
+    },
+    "ar": {
+        "select_lang": "🌐 الرجاء اختيار لغتك:",
+        "lang_changed": "✅ تم تحديث اللغة إلى العربية!",
+        "dashboard": "👤 لوحة تحكم المستخدم"
+    },
+    "hi": {
+        "select_lang": "🌐 कृपया अपनी भाषा चुनें:",
+        "lang_changed": "✅ भाषा बदलकर हिंदी कर दी गई है!",
+        "dashboard": "👤 यूजर डैशबोर्ड"
+    },
+    "bn": {
+        "select_lang": "🌐 অনুগ্রহ করে আপনার ভাষা নির্বাচন করুন:",
+        "lang_changed": "✅ ভাষা সফলভাবে বাংলায় আপডেট করা হয়েছে!",
+        "dashboard": "👤 ব্যবহারকারী ড্যাশবোর্ড"
+    },
+    "ng": {
+        "select_lang": "🌐 Abeg select your language:",
+        "lang_changed": "✅ Language don change to Naija Pidgin!",
+        "dashboard": "👤 User Dashboard"
+    }
+}
+
+# Function to get user language from the database
+def get_user_language(user_id):
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("SELECT language FROM users WHERE user_id = ?", (user_id,))
+    row = c.fetchone()
+    conn.close()
+    if row and row[0]:
+        return row[0]
+    return "en"
+
+# Function to fetch translated text based on user language
+def get_text(user_id, key):
+    lang = get_user_language(user_id)
+    if lang in translations and key in translations[lang]:
+        return translations[lang][key]
+    return translations["en"].get(key, key)
 
 # --- SOLANA AUTO-VERIFY LOGIC ---
 def verify_solana_tx(tx_id):
@@ -317,6 +393,64 @@ def check_and_update_rank(user_id):
         conn.commit()
 
     conn.close()
+  
+# Flag-based inline keyboard for language selection
+def get_language_keyboard():
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    markup.add(
+        types.InlineKeyboardButton("🇺🇸 English", callback_data="lang_en"),
+        types.InlineKeyboardButton("🇷🇺 Русский", callback_data="lang_ru"),
+        types.InlineKeyboardButton("🇨🇳 中文", callback_data="lang_zh"),
+        types.InlineKeyboardButton("🇻🇳 Tiếng Việt", callback_data="lang_vi"),
+        types.InlineKeyboardButton("🇮🇩 Bahasa Indonesia", callback_data="lang_id"),
+        types.InlineKeyboardButton("🇹🇭 ไทย", callback_data="lang_th"),
+        types.InlineKeyboardButton("🇸🇦 العربية", callback_data="lang_ar"),
+        types.InlineKeyboardButton("🇮🇳 हिन्दी", callback_data="lang_hi"),
+        types.InlineKeyboardButton("🇧🇩 বাংলা", callback_data="lang_bn"),
+        types.InlineKeyboardButton("🇳🇬 Naija (Pidgin)", callback_data="lang_ng")
+    )
+    return markup
+
+# Callback handler to update database when a language button is clicked
+@bot.callback_query_handler(func=lambda call: call.data.startswith('lang_'))
+def handle_language_selection(call):
+    user_id = call.from_user.id
+    selected_lang = call.data.split('_')[1]
+    
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("UPDATE users SET language = ? WHERE user_id = ?", (selected_lang, user_id))
+    conn.commit()
+    conn.close()
+    
+    success_msg = translations.get(selected_lang, translations["en"])["lang_changed"]
+    bot.answer_callback_query(call.id, success_msg)
+    try:
+        bot.edit_message_text(
+            chat_id=call.message.chat.id,
+            message_id=call.message.message_id,
+            text=success_msg
+        )
+    except Exception:
+        bot.send_message(call.message.chat.id, success_msg)
+
+# Command handler to open the language selection menu
+@bot.message_handler(commands=['language', 'lang'])
+def change_language_command(message):
+    bot.send_message(
+        message.chat.id,
+        "🌐 Please select your language / कृपया अपनी भाषा चुनें:",
+        reply_markup=get_language_keyboard()
+    )
+# Handler to open language menu from main menu button
+@bot.callback_query_handler(func=lambda call: call.data == 'open_lang_menu')
+def open_language_menu_callback(call):
+    bot.edit_message_text(
+        chat_id=call.message.chat.id,
+        message_id=call.message.message_id,
+        text="🌐 Please select your language / कृपया अपनी भाषा चुनें:",
+        reply_markup=get_language_keyboard()
+    )
 
 # --- HANDLERS ---
 @bot.message_handler(commands=["start"])
@@ -351,6 +485,7 @@ def start(message):
     markup.add("📊 Dashboard", "🎁 Withdraw")
     markup.add("🔗 Referral Link", "👥 Team Members")
     markup.add("🏆 Ranks & Royalty", "📜 Withdrawal History")
+    markup.add("🌐 Change Language")
 
     bot.send_message(
         message.chat.id,
