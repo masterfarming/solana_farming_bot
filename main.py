@@ -33,6 +33,7 @@ ADMIN_WALLET = "BY3Tzt5cA8FwoPRw3B265jwb8NDU5dupf76SXwKqjnRZ"
 ADMIN_ID = 5939907983
 SUPPORT_ADMIN = "@Farming_Master"
 ADMIN_PENDING_TOPUPS = {}
+ADMIN_BROADCAST_STATE = {}
 
 PROJECT_NAME = "SOLANA FARMING TELEBOT"
 
@@ -54,7 +55,7 @@ OVERRIDE_LEVELS = [
     0.02, 0.03, 0.05, 0.10, 0.15
 ]
 
-# --- RANKS & ROYALTY (Updated with new names & leg requirements) ---
+# --- RANKS & ROYALTY ---
 RANKS = [
     {"level": 1, "name": "Star", "target": 30, "strongest_leg_min": 12, "other_legs_min": 18, "daily_royalty": 0.03},
     {"level": 2, "name": "Orbit", "target": 100, "strongest_leg_min": 40, "other_legs_min": 60, "daily_royalty": 0.10},
@@ -116,6 +117,15 @@ def init_db():
         target_user_id INTEGER,
         amount REAL,
         note TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )""")
+
+    c.execute("""CREATE TABLE IF NOT EXISTS withdrawals (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        amount REAL NOT NULL,
+        wallet_address TEXT NOT NULL,
+        status TEXT DEFAULT 'Paid',
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
     
@@ -242,9 +252,12 @@ def update_team_business_recursive(conn, user_id, amount):
       else:
           break
 
-# --- CALCULATE RANK WITH LEG MINIMUM REQUIREMENTS ---
+# --- CALCULATE RANK WITH LEG MINIMUM REQUIREMENTS & CONGRATULATION ALERT ---
 def check_and_update_rank(user_id):
     conn = get_db()
+    curr_data = conn.execute("SELECT rank FROM users WHERE user_id=?", (user_id,)).fetchone()
+    old_rank = curr_data[0] if curr_data else "None"
+
     directs = conn.execute(
         "SELECT user_id, COALESCE(self_farming, 0) FROM users WHERE referrer_id=?",
         (user_id,),
@@ -270,11 +283,33 @@ def check_and_update_rank(user_id):
         if is_total_met and is_strongest_met and is_other_legs_met:
             achieved_rank = r["name"]
 
-    conn.execute(
-        "UPDATE users SET rank = ? WHERE user_id = ?",
-        (achieved_rank, user_id),
-    )
-    conn.commit()
+    if achieved_rank != old_rank and achieved_rank != "None":
+        conn.execute(
+            "UPDATE users SET rank = ? WHERE user_id = ?",
+            (achieved_rank, user_id),
+        )
+        conn.commit()
+        
+        try:
+            dir_biz = get_user_direct_business(conn, user_id)
+            congrats_text = (
+                "🎉 <b>CONGRATULATIONS!</b> 🎉\n\n"
+                "Fantastic news! You have successfully achieved a new rank upgrade!\n\n"
+                f"🏆 <b>New Rank:</b> <code>{achieved_rank}</code>\n\n"
+                f"• Direct Business: <b>{dir_biz:.2f} SOL</b>\n"
+                f"• Team Business: <b>{total_team_bus:.2f} SOL</b>\n\n"
+                "Keep up the amazing work and continue growing your team and earnings! 🚀"
+            )
+            bot.send_message(user_id, congrats_text, parse_mode="HTML")
+        except Exception as e:
+            print(f"Failed to send rank congratulation to {user_id}: {e}")
+    else:
+        conn.execute(
+            "UPDATE users SET rank = ? WHERE user_id = ?",
+            (achieved_rank, user_id),
+        )
+        conn.commit()
+
     conn.close()
 
 # --- HANDLERS ---
@@ -309,7 +344,7 @@ def start(message):
     markup.add("💎 Farming Plans", "💰 Deposit SOL")
     markup.add("📊 Dashboard", "🎁 Withdraw")
     markup.add("🔗 Referral Link", "👥 Team Members")
-    markup.add("🏆 Ranks & Royalty")
+    markup.add("🏆 Ranks & Royalty", "📜 Withdrawal History")
 
     bot.send_message(
         message.chat.id,
@@ -484,7 +519,6 @@ def team_ranks(message):
 
     current_rank_name = u[0] if u and u[0] else "None"
     
-    # Determine next rank to show progress
     next_rank = None
     if current_rank_name == "None":
         next_rank = RANKS[0]
@@ -503,7 +537,6 @@ def team_ranks(message):
         req_strongest = next_rank["strongest_leg_min"]
         req_other = next_rank["other_legs_min"]
 
-        # Status check with ticks and remaining amounts
         is_strongest_met = highest_leg >= req_strongest
         strongest_rem = 0 if is_strongest_met else max(0, req_strongest - highest_leg)
         strongest_icon = "✅" if is_strongest_met else f"❌ (Need {strongest_rem:.2f} SOL more)"
@@ -552,6 +585,7 @@ def admin_panel_markup():
     InlineKeyboardButton("➕ Top-up Free ID", callback_data="admin:topup_free"),
     InlineKeyboardButton("➕ Top-up Paid ID", callback_data="admin:topup_paid"),
   )
+  markup.add(InlineKeyboardButton("📢 Broadcast Message", callback_data="admin:broadcast"))
   markup.add(InlineKeyboardButton("❌ Close", callback_data="admin:close"))
   return markup
 
@@ -825,6 +859,13 @@ def admin_callback(call):
     elif action == "topup_paid":
         sent = bot.send_message(call.message.chat.id, "<b>Send Paid ID and Amount (e.g., 12345 0.5):</b>", parse_mode="HTML")
         bot.register_next_step_handler(sent, admin_paid_topup)
+    elif action == "broadcast":
+        ADMIN_BROADCAST_STATE[call.from_user.id] = "WAITING_FOR_BROADCAST"
+        bot.send_message(
+            call.message.chat.id,
+            "📢 <b>Broadcast Mode Activated</b>\n\nPlease send the message you want to broadcast (Text or Photo with Caption):",
+            parse_mode="HTML"
+        )
     elif action == "user":
         try:
             user_id = int(parts[2])
@@ -853,6 +894,56 @@ def admin_callback(call):
         bot.send_message(call.message.chat.id, "❌ <b>Cancelled.</b>", reply_markup=admin_panel_markup(), parse_mode="HTML")
     elif action == "close":
         bot.edit_message_text("<b>Admin panel closed.</b>", call.message.chat.id, call.message.message_id, parse_mode="HTML")
+
+# --- ADMIN BROADCAST HANDLER ---
+@bot.message_handler(
+    content_types=["text", "photo"],
+    func=lambda message: ADMIN_BROADCAST_STATE.get(message.from_user.id) == "WAITING_FOR_BROADCAST"
+)
+def execute_broadcast(message):
+    admin_id = message.from_user.id
+    if admin_id != ADMIN_ID:
+        return
+    ADMIN_BROADCAST_STATE.pop(admin_id, None)
+
+    conn = get_db()
+    users = conn.execute("SELECT user_id FROM users").fetchall()
+    conn.close()
+
+    total_users = len(users)
+    success_count = 0
+    fail_count = 0
+
+    status_msg = bot.send_message(
+        message.chat.id,
+        f"🚀 <b>Broadcast started...</b>\nTotal users: {total_users}",
+        parse_mode="HTML"
+    )
+
+    for u in users:
+        u_id = u[0]
+        try:
+            if message.photo:
+                photo_id = message.photo[-1].file_id
+                caption = message.caption or ""
+                bot.send_photo(u_id, photo_id, caption=caption, parse_mode="HTML")
+            else:
+                bot.send_message(u_id, message.text, parse_mode="HTML")
+            success_count += 1
+        except Exception:
+            fail_count += 1
+
+    bot.edit_message_text(
+        chat_id=message.chat.id,
+        message_id=status_msg.message_id,
+        text=(
+            "✅ <b>Broadcast Completed!</b>\n\n"
+            f"• Total Users: <code>{total_users}</code>\n"
+            f"• Successfully Sent: <code>{success_count}</code>\n"
+            f"• Failed / Blocked: <code>{fail_count}</code>"
+        ),
+        parse_mode="HTML"
+    )
 
 # --- WITHDRAWAL HANDLERS ---
 @bot.message_handler(func=lambda m: m.text and "Withdraw" in m.text)
@@ -903,12 +994,34 @@ def admin_pay(message):
       uid, amt = int(args[1]), float(args[2])
       conn = get_db()
       conn.execute("UPDATE users SET balance = balance - ?, total_withdrawn = total_withdrawn + ? WHERE user_id = ?", (amt, amt, uid))
+      conn.execute("INSERT INTO withdrawals (user_id, amount, wallet_address) VALUES (?, ?, ?)", (uid, amt, "Admin Processed"))
       conn.commit()
       conn.close()
       bot.send_message(uid, f"📤 <b>Paid:</b> <code>{amt} SOL</code> sent!", parse_mode="HTML")
       bot.send_message(ADMIN_ID, "✅ <b>Done.</b>", parse_mode="HTML")
     except Exception as e:
       bot.send_message(ADMIN_ID, f"Error: {e}", parse_mode="HTML")
+
+# --- WITHDRAWAL HISTORY HANDLER ---
+@bot.message_handler(func=lambda m: m.text == "📜 Withdrawal History")
+def withdrawal_history_handler(message):
+    user_id = message.from_user.id
+    conn = get_db()
+    withdrawals = conn.execute(
+        "SELECT amount, status, created_at FROM withdrawals WHERE user_id = ? ORDER BY id DESC LIMIT 10",
+        (user_id,)
+    ).fetchall()
+    conn.close()
+
+    if not withdrawals:
+        bot.send_message(message.chat.id, "📜 <b>Withdrawal History</b>\n\nYou have no past withdrawals.", parse_mode="HTML")
+        return
+
+    text = "📜 <b>Your Recent Withdrawals:</b>\n\n"
+    for idx, (amt, status, date) in enumerate(withdrawals, 1):
+        text += f"{idx}. Amount: <code>{amt:.4f} SOL</code> | Status: <b>{status}</b>\n   🕒 <code>{date}</code>\n\n"
+
+    bot.send_message(message.chat.id, text, parse_mode="HTML")
 
 # --- ROI & BACKGROUND WORKER (5 MIN SLEEP) ---
 def roi_worker():
@@ -941,7 +1054,6 @@ def roi_worker():
                         )
                         conn.commit()
 
-                        # Override Bonus
                         curr = uid
                         for level_idx, pct in enumerate(OVERRIDE_LEVELS):
                             res = conn.execute("SELECT referrer_id FROM users WHERE user_id=?", (curr,)).fetchone()
@@ -973,7 +1085,7 @@ def referral_link_handler(message):
     text = f"<b>🔗 Your Referral Link</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>"
     bot.send_message(message.chat.id, text, parse_mode="HTML")
 
-# --- TEAM MEMBERS HANDLERS ---
+# --- TEAM MEMBERS HANDLERS (WITH LEVEL-WISE BUSINESS BREAKDOWN) ---
 @bot.message_handler(func=lambda m: m.text == "👥 Team Members")
 def my_team_handler(message):
     conn = get_db()
@@ -997,10 +1109,12 @@ def my_team_handler(message):
 
     total_members = len(team_data)
     level_counts = {}
+    level_business = {}
     for uid, sf, lvl in team_data:
         level_counts[lvl] = level_counts.get(lvl, 0) + 1
+        level_business[lvl] = level_business.get(lvl, 0.0) + sf
 
-    team_text = f"<b>👥 Your 25-Level Team Overview</b>\n\n• <b>Total Members:</b> {total_members}\n\nClick levels below:"
+    team_text = f"<b>👥 Your 25-Level Team Overview</b>\n\n• <b>Total Members:</b> {total_members}\n\nSelect a level below for members & business breakdown:"
     markup = types.InlineKeyboardMarkup(row_width=3)
     buttons = [types.InlineKeyboardButton(f"Lvl {lvl} ({level_counts[lvl]})", callback_data=f"view_lvl_{lvl}") for lvl in sorted(level_counts.keys()) if lvl <= 25]
     markup.add(*buttons)
@@ -1029,7 +1143,8 @@ def callback_view_level(call):
         bot.answer_callback_query(call.id, f"No members at Level {target_level}.", show_alert=True)
         return
 
-    text = f"<b>👥 Level {target_level} Members:</b>\n\n"
+    total_lvl_bus = sum([sf for uid, sf in members])
+    text = f"<b>👥 Level {target_level} Details:</b>\n• Total Business: <code>{total_lvl_bus:.2f} SOL</code>\n\n"
     for idx, (uid, sf) in enumerate(members, 1):
         text += f"{idx}. ID: <code>{uid}</code> | Farming: <code>{sf:.2f} SOL</code>\n"
 
