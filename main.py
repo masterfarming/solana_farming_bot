@@ -11,6 +11,7 @@ import telebot
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
 import telebot.types as types
 from flask import Flask
+from datetime import datetime
 
 app = Flask('')
 
@@ -107,7 +108,6 @@ def init_db():
         plan_name TEXT,
         total_team_business REAL DEFAULT 0
     )""")
-    # Add last_withdrawal_date column if it doesn't exist
     try:
         c.execute("ALTER TABLE users ADD COLUMN last_withdrawal_date TEXT")
     except sqlite3.OperationalError:
@@ -118,7 +118,6 @@ def init_db():
         pass
 
     c.execute("""CREATE TABLE IF NOT EXISTS transactions (txid TEXT PRIMARY KEY)""")
-
     c.execute("""CREATE TABLE IF NOT EXISTS admin_actions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         admin_id INTEGER NOT NULL,
@@ -128,7 +127,6 @@ def init_db():
         note TEXT,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
-
     c.execute("""CREATE TABLE IF NOT EXISTS withdrawals (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
@@ -138,67 +136,74 @@ def init_db():
         status TEXT DEFAULT 'Paid',
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
-    
     conn.commit()
     conn.close()
 
 init_db()
 
-# 10 Global Languages Translations Dictionary
+# --- 10 GLOBAL LANGUAGES TRANSLATIONS ---
 translations = {
     "en": {
         "select_lang": "🌐 Please select your language:",
         "lang_changed": "✅ Language updated to English!",
-        "dashboard": "👤 User Dashboard"
+        "welcome": "🚜 <b>Welcome to {PROJECT_NAME}</b>\n\nUse the buttons below to start your investment journey.",
+        "btn_plans": "💎 Farming Plans",
+        "btn_deposit": "💰 Deposit SOL",
+        "btn_dashboard": "📊 Dashboard",
+        "btn_withdraw": "🎁 Withdraw",
+        "btn_ref": "🔗 Referral Link",
+        "btn_team": "👥 Team Members",
+        "btn_ranks": "🏆 Ranks & Royalty",
+        "btn_history": "📜 Withdrawal History",
+        "btn_lang": "🌐 Change Language"
     },
     "ru": {
         "select_lang": "🌐 Пожалуйста, выберите язык:",
         "lang_changed": "✅ Язык успешно изменен на русский!",
-        "dashboard": "👤 Панель пользователя"
+        "welcome": "🚜 <b>Добро пожаловать в {PROJECT_NAME}</b>\n\nИспользуйте кнопки ниже, чтобы начать инвестиционный путь.",
     },
     "zh": {
         "select_lang": "🌐 请选择您的语言：",
         "lang_changed": "✅ 语言已更新为中文！",
-        "dashboard": "👤 用户面板"
+        "welcome": "🚜 <b>欢迎来到 {PROJECT_NAME}</b>\n\n使用下方的按钮开始您的投资之旅。",
     },
     "vi": {
         "select_lang": "🌐 Vui lòng chọn ngôn ngữ của bạn:",
         "lang_changed": "✅ Đã cập nhật ngôn ngữ thành Tiếng Việt!",
-        "dashboard": "👤 Bảng điều khiển"
+        "welcome": "🚜 <b>Chào mừng bạn đến với {PROJECT_NAME}</b>\n\nSử dụng các nút bên dưới để bắt đầu hành trình đầu tư của bạn.",
     },
     "id": {
         "select_lang": "🌐 Silakan pilih bahasa Anda:",
         "lang_changed": "✅ Bahasa berhasil diubah ke Bahasa Indonesia!",
-        "dashboard": "👤 Dashboard Pengguna"
+        "welcome": "🚜 <b>Selamat datang di {PROJECT_NAME}</b>\n\nGunakan tombol di bawah untuk memulai perjalanan investasi Anda.",
     },
     "th": {
         "select_lang": "🌐 กรุณาเลือกภาษาของคุณ:",
         "lang_changed": "✅ เปลี่ยนภาษาเป็นภาษาไทยเรียบร้อยแล้ว!",
-        "dashboard": "👤 แดชบอร์ดผู้ใช้"
+        "welcome": "🚜 <b>ยินดีต้อนรับสู่ {PROJECT_NAME}</b>\n\nใช้ปุ่มด้านล่างเพื่อเริ่มต้นการลงทุนของคุณ",
     },
     "ar": {
         "select_lang": "🌐 الرجاء اختيار لغتك:",
         "lang_changed": "✅ تم تحديث اللغة إلى العربية!",
-        "dashboard": "👤 لوحة تحكم المستخدم"
+        "welcome": "🚜 <b>مرحباً بك في {PROJECT_NAME}</b>\n\nاستخدم الأزرار أدناه لبدء رحلة الاستثمار الخاصة بك.",
     },
     "hi": {
         "select_lang": "🌐 कृपया अपनी भाषा चुनें:",
         "lang_changed": "✅ भाषा बदलकर हिंदी कर दी गई है!",
-        "dashboard": "👤 यूजर डैशबोर्ड"
+        "welcome": "🚜 <b>{PROJECT_NAME} में आपका स्वागत है</b>\n\nअपनी निवेश यात्रा शुरू करने के लिए नीचे दिए गए बटनों का उपयोग करें।",
     },
     "bn": {
         "select_lang": "🌐 অনুগ্রহ করে আপনার ভাষা নির্বাচন করুন:",
         "lang_changed": "✅ ভাষা সফলভাবে বাংলায় আপডেট করা হয়েছে!",
-        "dashboard": "👤 ব্যবহারকারী ড্যাশবোর্ড"
+        "welcome": "🚜 <b>{PROJECT_NAME}-এ আপনাকে স্বাগতম</b>\n\nআপনার বিনিয়োগ যাত্রা শুরু করতে নিচের বোতামগুলি ব্যবহার করুন।",
     },
     "ng": {
         "select_lang": "🌐 Abeg select your language:",
         "lang_changed": "✅ Language don change to Naija Pidgin!",
-        "dashboard": "👤 User Dashboard"
+        "welcome": "🚜 <b>Welcome to {PROJECT_NAME}</b>\n\nUse the buttons below to start your investment journey.",
     }
 }
 
-# Function to get user language from the database
 def get_user_language(user_id):
     conn = get_db()
     c = conn.cursor()
@@ -208,13 +213,6 @@ def get_user_language(user_id):
     if row and row[0]:
         return row[0]
     return "en"
-
-# Function to fetch translated text based on user language
-def get_text(user_id, key):
-    lang = get_user_language(user_id)
-    if lang in translations and key in translations[lang]:
-        return translations[lang][key]
-    return translations["en"].get(key, key)
 
 # --- SOLANA AUTO-VERIFY LOGIC ---
 def verify_solana_tx(tx_id):
@@ -241,7 +239,6 @@ def verify_solana_tx(tx_id):
     print(f"TX Error: {e}")
     return None
 
-# --- HELPER FUNCTIONS ---
 def get_user_direct_business(conn, user_id):
   directs = conn.execute("SELECT COALESCE(self_farming, 0) FROM users WHERE referrer_id=?", (user_id,)).fetchall()
   return sum([d[0] for d in directs])
@@ -278,7 +275,6 @@ def has_direct_referral(conn, user_id):
           return True
   return False
 
-# --- DISTRIBUTE 5-LEVEL DIRECT COMMISSIONS ---
 def distribute_commissions(conn, user_id, amount):
     updates = []
     curr = user_id
@@ -334,7 +330,6 @@ def update_team_business_recursive(conn, user_id, amount):
       else:
           break
 
-# --- CALCULATE RANK WITH LEG MINIMUM REQUIREMENTS & CONGRATULATION ALERT ---
 def check_and_update_rank(user_id):
     conn = get_db()
     curr_data = conn.execute("SELECT rank FROM users WHERE user_id=?", (user_id,)).fetchone()
@@ -351,7 +346,6 @@ def check_and_update_rank(user_id):
         leg_businesses.append(sub_bus)
 
     leg_businesses.sort(reverse=True)
-
     strongest_leg = leg_businesses[0] if len(leg_businesses) > 0 else 0
     other_legs_total = sum(leg_businesses[1:]) if len(leg_businesses) > 1 else 0
     total_team_bus = sum(leg_businesses)
@@ -366,12 +360,8 @@ def check_and_update_rank(user_id):
             achieved_rank = r["name"]
 
     if achieved_rank != old_rank and achieved_rank != "None":
-        conn.execute(
-            "UPDATE users SET rank = ? WHERE user_id = ?",
-            (achieved_rank, user_id),
-        )
+        conn.execute("UPDATE users SET rank = ? WHERE user_id = ?", (achieved_rank, user_id))
         conn.commit()
-        
         try:
             dir_biz = get_user_direct_business(conn, user_id)
             congrats_text = (
@@ -386,15 +376,10 @@ def check_and_update_rank(user_id):
         except Exception as e:
             print(f"Failed to send rank congratulation to {user_id}: {e}")
     else:
-        conn.execute(
-            "UPDATE users SET rank = ? WHERE user_id = ?",
-            (achieved_rank, user_id),
-        )
+        conn.execute("UPDATE users SET rank = ? WHERE user_id = ?", (achieved_rank, user_id))
         conn.commit()
-
     conn.close()
   
-# Flag-based inline keyboard for language selection
 def get_language_keyboard():
     markup = types.InlineKeyboardMarkup(row_width=2)
     markup.add(
@@ -411,7 +396,6 @@ def get_language_keyboard():
     )
     return markup
 
-# Callback handler to update database when a language button is clicked
 @bot.callback_query_handler(func=lambda call: call.data.startswith('lang_'))
 def handle_language_selection(call):
     user_id = call.from_user.id
@@ -433,28 +417,18 @@ def handle_language_selection(call):
         )
     except Exception:
         bot.send_message(call.message.chat.id, success_msg)
+
 @bot.message_handler(func=lambda message: message.text == "🌐 Change Language")
 def language_text_handler(message):
     user_id = message.from_user.id
-    # Database se user ki language nikalte hain (default 'en')
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT language FROM users WHERE user_id = ?", (user_id,))
-    row = cursor.fetchone()
-    conn.close()
-    
-    lang = row["language"] if row and "language" in row.keys() else "en"
-    
-    # Translation dictionary se text fetch karenge (agar available ho, nahi toh fallback English)
-    select_text = translations.get(lang, translations.get("en", {})).get("select_language", "🌐 Please select your language:")
-    
+    lang = get_user_language(user_id)
+    select_text = translations.get(lang, translations.get("en", {})).get("select_lang", "🌐 Please select your language:")
     bot.send_message(
         message.chat.id,
         select_text,
         reply_markup=get_language_keyboard()
     )
 
-# Command handler to open the language selection menu
 @bot.message_handler(commands=['language', 'lang'])
 def change_language_command(message):
     bot.send_message(
@@ -462,17 +436,7 @@ def change_language_command(message):
         "🌐 Please select your language / कृपया अपनी भाषा चुनें:",
         reply_markup=get_language_keyboard()
     )
-# Handler to open language menu from main menu button
-@bot.callback_query_handler(func=lambda call: call.data == 'open_lang_menu')
-def open_language_menu_callback(call):
-    bot.edit_message_text(
-        chat_id=call.message.chat.id,
-        message_id=call.message.message_id,
-        text="🌐 Please select your language / कृपया अपनी भाषा चुनें:",
-        reply_markup=get_language_keyboard()
-    )
 
-# --- HANDLERS ---
 @bot.message_handler(commands=["start"])
 def start(message):
     args = message.text.split()
@@ -500,6 +464,11 @@ def start(message):
     conn.commit()
     conn.close()
 
+    user_id = message.from_user.id
+    lang = get_user_language(user_id)
+    welcome_template = translations.get(lang, translations["en"]).get("welcome", "🚜 <b>Welcome to {PROJECT_NAME}</b>\n\nUse the buttons below to start your investment journey.")
+    welcome_text = welcome_template.format(PROJECT_NAME=PROJECT_NAME)
+
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     markup.add("💎 Farming Plans", "💰 Deposit SOL")
     markup.add("📊 Dashboard", "🎁 Withdraw")
@@ -509,22 +478,34 @@ def start(message):
 
     bot.send_message(
         message.chat.id,
-        f"🚜 <b>Welcome to {PROJECT_NAME}</b>\n\nUse the buttons below to start your investment journey.",
+        welcome_text,
         parse_mode="HTML",
         reply_markup=markup,
     )
 
 @bot.message_handler(func=lambda m: m.text == "💎 Farming Plans")
 def farming_plans(message):
-  text = (
-      "<b>💎 Farming Packages (Max Cap: 250% for Self, 500% with Team):</b>\n\n"
-      "1️⃣ <b>STARTER</b>\n<b>• Limit:</b> <code>0.10 - 2.0 SOL</code>\n<b>• Reward:</b> <code>0.5% Daily</code>\n\n"
-      "2️⃣ <b>ADVANCE</b>\n<b>• Limit:</b> <code>2.10 - 10.0 SOL</code>\n<b>• Reward:</b> <code>1.0% Daily</code>\n\n"
-      "3️⃣ <b>PREMIUM</b>\n<b>• Limit:</b> <code>10.10 - 25.0 SOL</code>\n<b>• Reward:</b> <code>1.5% Daily</code>\n\n"
-      "4️⃣ <b>GALAXY</b>\n<b>• Limit:</b> <code>25.10 - 1000 SOL</code>\n<b>• Reward:</b> <code>2.0% Daily</code>\n\n"
-      "⚠️ <i>Note: Base cap is 250%. Referring at least one active user upgrades max cap to 500%.</i>"
-  )
-  bot.send_message(message.chat.id, text, parse_mode="HTML")
+    user_id = message.from_user.id
+    lang = get_user_language(user_id)
+    
+    default_text = (
+        "<b>💎 Farming Packages (Max Cap: 250% for Self, 500% with Team):</b>\n\n"
+        "1️⃣ <b>STARTER</b>\n"
+        "• Limit: 0.10 - 2.0 SOL\n"
+        "• Reward: 0.5% Daily\n\n"
+        "2️⃣ <b>ADVANCE</b>\n"
+        "• Limit: 2.10 - 10.0 SOL\n"
+        "• Reward: 1.0% Daily\n\n"
+        "3️⃣ <b>PREMIUM</b>\n"
+        "• Limit: 10.10 - 25.0 SOL\n"
+        "• Reward: 1.5% Daily\n\n"
+        "4️⃣ <b>GALAXY</b>\n"
+        "• Limit: 25.10 - 1000 SOL\n"
+        "• Reward: 2.0% Daily\n\n"
+        "⚠️ <i>Note: Base cap is 250%. Referring at least one active user upgrades max cap to 500%.</i>"
+    )
+    text = translations.get(lang, translations.get("en", {})).get("farming_packages", default_text)
+    bot.send_message(message.chat.id, text, parse_mode="HTML")
 
 @bot.message_handler(func=lambda m: m.text == "💰 Deposit SOL")
 def deposit_sol(message):
@@ -596,7 +577,6 @@ def dashboard_handler(message):
         conn = get_db()
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
-
         cursor.execute("""
             SELECT balance, self_farming, self_farming_bonus, 
                    direct_referral_bonus, team_referral_bonus, 
@@ -605,7 +585,6 @@ def dashboard_handler(message):
             FROM users WHERE user_id = ?
         """, (user_id,))
         u = cursor.fetchone()
-        
         has_ref = has_direct_referral(conn, user_id)
         conn.close()
     except Exception as e:
@@ -851,10 +830,7 @@ def record_admin_topup(admin_id, user_id, amount, note, is_paid=False):
     conn.row_factory = sqlite3.Row
     try:
         existed = conn.execute("SELECT 1 FROM users WHERE user_id=?", (user_id,)).fetchone() is not None
-        conn.execute(
-            "INSERT OR IGNORE INTO users (user_id, referrer_id, status) VALUES (?, NULL, 'inactive')",
-            (user_id,),
-        )
+        conn.execute("INSERT OR IGNORE INTO users (user_id, referrer_id, status) VALUES (?, NULL, 'inactive')", (user_id,))
 
         amount = float(amount)
         if amount <= 2.0:
@@ -876,22 +852,12 @@ def record_admin_topup(admin_id, user_id, amount, note, is_paid=False):
                 timestamp DATETIME
             )
         ''')
-        cursor.execute('''
-            INSERT INTO admin_topups (user_id, amount, plan_name, timestamp)
-            VALUES (?, ?, ?, datetime('now'))
-        ''', (user_id, amount, plan_name))
+        cursor.execute('INSERT INTO admin_topups (user_id, amount, plan_name, timestamp) VALUES (?, ?, ?, datetime("now"))', (user_id, amount, plan_name))
 
         if is_paid:
             max_cap = amount * 2.5 
             cursor.execute(
-                """
-                UPDATE users 
-                SET self_farming = COALESCE(self_farming, 0) + ?,
-                    max_cap = ?,
-                    status = 'active', 
-                    plan_name = ? 
-                WHERE user_id = ?
-                """,
+                "UPDATE users SET self_farming = COALESCE(self_farming, 0) + ?, max_cap = ?, status = 'active', plan_name = ? WHERE user_id = ?",
                 (amount, max_cap, plan_name, user_id),
             )
             distribute_commissions(conn, user_id, amount)
@@ -927,9 +893,7 @@ def queue_admin_topup(admin_id, user_id, amount, note, is_paid=False):
    )
    bot.send_message(
        admin_id,
-       f"<b>⚠️ Confirm manual top-up</b>\n\n"
-       f"<b>User ID:</b> <code>{user_id}</code>\n"
-       f"<b>Amount:</b> <code>{amount:.8f} SOL</code>\n",
+       f"<b>⚠️ Confirm manual top-up</b>\n\n<b>User ID:</b> <code>{user_id}</code>\n<b>Amount:</b> <code>{amount:.8f} SOL</code>\n",
        reply_markup=markup,
        parse_mode="HTML"
    )
@@ -1022,11 +986,7 @@ def admin_callback(call):
         bot.register_next_step_handler(sent, admin_paid_topup)
     elif action == "broadcast":
         ADMIN_BROADCAST_STATE[call.from_user.id] = "WAITING_FOR_BROADCAST"
-        bot.send_message(
-            call.message.chat.id,
-            "📢 <b>Broadcast Mode Activated</b>\n\nPlease send the message you want to broadcast (Text or Photo with Caption):",
-            parse_mode="HTML"
-        )
+        bot.send_message(call.message.chat.id, "📢 <b>Broadcast Mode Activated</b>\n\nPlease send the message you want to broadcast:", parse_mode="HTML")
     elif action == "user":
         try:
             user_id = int(parts[2])
@@ -1056,11 +1016,7 @@ def admin_callback(call):
     elif action == "close":
         bot.edit_message_text("<b>Admin panel closed.</b>", call.message.chat.id, call.message.message_id, parse_mode="HTML")
 
-# --- ADMIN BROADCAST HANDLER ---
-@bot.message_handler(
-    content_types=["text", "photo"],
-    func=lambda message: ADMIN_BROADCAST_STATE.get(message.from_user.id) == "WAITING_FOR_BROADCAST"
-)
+@bot.message_handler(content_types=["text", "photo"], func=lambda message: ADMIN_BROADCAST_STATE.get(message.from_user.id) == "WAITING_FOR_BROADCAST")
 def execute_broadcast(message):
     admin_id = message.from_user.id
     if admin_id != ADMIN_ID:
@@ -1072,14 +1028,8 @@ def execute_broadcast(message):
     conn.close()
 
     total_users = len(users)
-    success_count = 0
-    fail_count = 0
-
-    status_msg = bot.send_message(
-        message.chat.id,
-        f"🚀 <b>Broadcast started...</b>\nTotal users: {total_users}",
-        parse_mode="HTML"
-    )
+    success_count, fail_count = 0, 0
+    status_msg = bot.send_message(message.chat.id, f"🚀 <b>Broadcast started...</b>\nTotal users: {total_users}", parse_mode="HTML")
 
     for u in users:
         u_id = u[0]
@@ -1106,7 +1056,6 @@ def execute_broadcast(message):
         parse_mode="HTML"
     )
 
-# --- WITHDRAWAL & HISTORY HANDLERS (Updated with Fee Display for Admin) ---
 @bot.message_handler(func=lambda m: m.text == "📜 Withdrawal History")
 def withdrawal_history(message):
     conn = get_db()
@@ -1121,14 +1070,10 @@ def withdrawal_history(message):
         text += f"• <code>{amt:.4f} SOL</code> | Status: <b>{status}</b>\n  🔗 <b>TxID:</b> <code>{escape(txid)}</code>\n  🕒 <code>{date}</code>\n\n"
     bot.send_message(message.chat.id, text, parse_mode="HTML")
 
-from datetime import datetime
-
 @bot.message_handler(func=lambda m: m.text and m.text.strip() in ["🎁 Withdraw", "Withdraw"])
 def withdraw_start(message):
     user_id = message.from_user.id
     conn = get_db()
-    
-    # 1-withdrawal-per-day check
     user_row = conn.execute("SELECT last_withdrawal_date FROM users WHERE user_id=?", (user_id,)).fetchone()
     today_date = datetime.now().strftime("%Y-%m-%d")
     
@@ -1147,7 +1092,6 @@ def withdraw_start(message):
         
     msg = bot.send_message(message.chat.id, f"💰 <b>Available Balance:</b> <code>{bal:.4f} SOL</code>\n\nEnter amount:", parse_mode="HTML")
     bot.register_next_step_handler(msg, process_withdrawal_amount)
-
 
 def process_withdrawal_amount(message):
     try:
@@ -1171,21 +1115,17 @@ def process_withdrawal_amount(message):
 def process_withdrawal_address(message, amount):
     wallet_address = message.text.strip()
     user_id = message.from_user.id
-    
-    # 10% Fee Calculation
     fee = amount * 0.10
     net_amount = amount - fee
 
     bot.send_message(message.chat.id, f"✅ Withdrawal request submitted!\n• Requested: <code>{amount:.4f} SOL</code>\n• Fee (10%): <code>{fee:.4f} SOL</code>\n• You Will Get: <code>{net_amount:.4f} SOL</code>", parse_mode="HTML")
-        # Save today's date for 1 withdrawal per day limit
-    from datetime import datetime
+    
     today_date = datetime.now().strftime("%Y-%m-%d")
     conn = get_db()
     conn.execute("UPDATE users SET last_withdrawal_date = ? WHERE user_id = ?", (today_date, user_id))
     conn.commit()
     conn.close()
 
-    # Admin notification showing requested amount, 10% fee, and exact net amount to send
     admin_msg = (
         f"🚨 <b>Withdrawal Request</b>\n"
         f"User: <code>{user_id}</code>\n"
@@ -1204,24 +1144,19 @@ def admin_pay(message):
       args = message.text.split()
       uid, amt = int(args[1]), float(args[2])
       txid = args[3] if len(args) > 3 else "Paid by Admin"
-      
-      # Calculate net amount after 10% fee for the user notification message
       net_amt = amt * 0.9
       
       conn = get_db()
-      # Deducts the full requested amount (amt) from user balance and total withdrawals
       conn.execute("UPDATE users SET balance = balance - ?, total_withdrawn = total_withdrawn + ? WHERE user_id = ?", (amt, amt, uid))
       conn.execute("INSERT INTO withdrawals (user_id, amount, wallet_address, txid) VALUES (?, ?, ?, ?)", (uid, amt, "Admin Paid", txid))
       conn.commit()
       conn.close()
       
-      # Sends the net amount (after fee deduction) to the user
       bot.send_message(uid, f"📤 <b>Paid:</b> <code>{net_amt:.4f} SOL</code> sent!\n🔗 <b>TxID:</b> <code>{txid}</code>", parse_mode="HTML")
       bot.send_message(ADMIN_ID, "✅ <b>Done & Saved TxID!</b>", parse_mode="HTML")
     except Exception as e:
       bot.send_message(ADMIN_ID, f"Error: {e}", parse_mode="HTML")
 
-# --- TEAM MEMBERS HANDLERS (WITH LEVEL-WISE BUSINESS BREAKDOWN) ---
 @bot.message_handler(func=lambda m: m.text == "👥 Team Members")
 def my_team_handler(message):
     conn = get_db()
@@ -1245,10 +1180,8 @@ def my_team_handler(message):
 
     total_members = len(team_data)
     level_counts = {}
-    level_business = {}
     for uid, sf, lvl in team_data:
         level_counts[lvl] = level_counts.get(lvl, 0) + 1
-        level_business[lvl] = level_business.get(lvl, 0.0) + sf
 
     team_text = f"<b>👥 Your 25-Level Team Overview</b>\n\n• <b>Total Members:</b> {total_members}\n\nSelect a level below for members & business breakdown:"
     markup = types.InlineKeyboardMarkup(row_width=3)
@@ -1294,7 +1227,6 @@ def referral_link_handler(message):
     text = f"<b>🔗 Your Referral Link</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>"
     bot.send_message(message.chat.id, text, parse_mode="HTML")
 
-# --- ROI & BACKGROUND WORKER (5 MIN SLEEP) ---
 def roi_worker():
     while True:
         try:
@@ -1343,7 +1275,6 @@ def roi_worker():
                                 break
 
             conn.close()
-            print("ROI worker cycle completed. Sleeping for 5 minutes...")
         except Exception as e:
             print(f">>> DEBUG: ROI Worker Error -> {e}")
 
