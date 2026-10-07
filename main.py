@@ -961,17 +961,33 @@ def withdrawal_history(message):
         text += f"• <code>{amt:.4f} SOL</code> | Status: <b>{status}</b>\n  🔗 <b>TxID:</b> <code>{escape(txid)}</code>\n  🕒 <code>{date}</code>\n\n"
     bot.send_message(message.chat.id, text, parse_mode="HTML")
 
+from datetime import datetime
+
 @bot.message_handler(func=lambda m: m.text and m.text.strip() in ["🎁 Withdraw", "Withdraw"])
 def withdraw_start(message):
+    user_id = message.from_user.id
     conn = get_db()
-    u = conn.execute("SELECT balance FROM users WHERE user_id=?", (message.from_user.id,)).fetchone()
+    
+    # 1-withdrawal-per-day check
+    user_row = conn.execute("SELECT last_withdrawal_date FROM users WHERE user_id=?", (user_id,)).fetchone()
+    today_date = datetime.now().strftime("%Y-%m-%d")
+    
+    if user_row and user_row[0] == today_date:
+        conn.close()
+        bot.send_message(message.chat.id, "❌ <b>You can only withdraw once per day! Please try again tomorrow.</b>", parse_mode="HTML")
+        return
+
+    u = conn.execute("SELECT balance FROM users WHERE user_id=?", (user_id,)).fetchone()
     conn.close()
+    
     bal = u[0] if u else 0
     if bal < 0.01:
         bot.send_message(message.chat.id, "❌ <b>Minimum withdrawal limit is</b> <code>0.01 SOL</code>.", parse_mode="HTML")
         return
+        
     msg = bot.send_message(message.chat.id, f"💰 <b>Available Balance:</b> <code>{bal:.4f} SOL</code>\n\nEnter amount:", parse_mode="HTML")
     bot.register_next_step_handler(msg, process_withdrawal_amount)
+
 
 def process_withdrawal_amount(message):
     try:
@@ -1001,7 +1017,14 @@ def process_withdrawal_address(message, amount):
     net_amount = amount - fee
 
     bot.send_message(message.chat.id, f"✅ Withdrawal request submitted!\n• Requested: <code>{amount:.4f} SOL</code>\n• Fee (10%): <code>{fee:.4f} SOL</code>\n• You Will Get: <code>{net_amount:.4f} SOL</code>", parse_mode="HTML")
-    
+        # Save today's date for 1 withdrawal per day limit
+    from datetime import datetime
+    today_date = datetime.now().strftime("%Y-%m-%d")
+    conn = get_db()
+    conn.execute("UPDATE users SET last_withdrawal_date = ? WHERE user_id = ?", (today_date, user_id))
+    conn.commit()
+    conn.close()
+
     # Admin notification showing requested amount, 10% fee, and exact net amount to send
     admin_msg = (
         f"🚨 <b>Withdrawal Request</b>\n"
