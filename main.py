@@ -1010,7 +1010,7 @@ def process_withdrawal_address(message, amount):
         f"Fee (10%): <code>{fee:.4f} SOL</code>\n"
         f"👉 <b>Net Send to User:</b> <code>{net_amount:.4f} SOL</code>\n"
         f"Wallet: <code>{wallet_address}</code>\n\n"
-        f"Command to Pay:\n<code>/pay {user_id} {net_amount} [TxID]</code>"
+        f"Command to Pay:\n<code>/pay {user_id} {amount} [TxID]</code>"
     )
     bot.send_message(ADMIN_ID, admin_msg, parse_mode="HTML")
 
