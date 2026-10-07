@@ -1022,13 +1022,18 @@ def admin_pay(message):
       uid, amt = int(args[1]), float(args[2])
       txid = args[3] if len(args) > 3 else "Paid by Admin"
       
+      # Calculate net amount after 10% fee for the user message
+      net_amt = amt * 0.9
+      
       conn = get_db()
+      # Deduct the full requested amount (amt) from user balance and total withdrawals
       conn.execute("UPDATE users SET balance = balance - ?, total_withdrawn = total_withdrawn + ? WHERE user_id = ?", (amt, amt, uid))
       conn.execute("INSERT INTO withdrawals (user_id, amount, wallet_address, txid) VALUES (?, ?, ?, ?)", (uid, amt, "Admin Paid", txid))
       conn.commit()
       conn.close()
       
-      bot.send_message(uid, f"📤 <b>Paid:</b> <code>{amt} SOL</code> sent!\n🔗 <b>TxID:</b> <code>{txid}</code>", parse_mode="HTML")
+      # Send the net amount (after fee deduction) to the user
+      bot.send_message(uid, f"📤 <b>Paid:</b> <code>{net_amt:.4f} SOL</code> sent!\n🔗 <b>TxID:</b> <code>{txid}</code>", parse_mode="HTML")
       bot.send_message(ADMIN_ID, "✅ <b>Done & Saved TxID!</b>", parse_mode="HTML")
     except Exception as e:
       bot.send_message(ADMIN_ID, f"Error: {e}", parse_mode="HTML")
