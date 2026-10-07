@@ -946,7 +946,7 @@ def execute_broadcast(message):
         parse_mode="HTML"
     )
 
-# --- WITHDRAWAL & HISTORY HANDLERS (Fixed conflict & TxID included) ---
+# --- WITHDRAWAL & HISTORY HANDLERS (Updated with Fee Display for Admin) ---
 @bot.message_handler(func=lambda m: m.text == "📜 Withdrawal History")
 def withdrawal_history(message):
     conn = get_db()
@@ -995,8 +995,24 @@ def process_withdrawal_amount(message):
 def process_withdrawal_address(message, amount):
     wallet_address = message.text.strip()
     user_id = message.from_user.id
-    bot.send_message(message.chat.id, f"✅ Withdrawal request submitted! Net: <code>{amount * 0.9:.4f} SOL</code>", parse_mode="HTML")
-    bot.send_message(ADMIN_ID, f"🚨 <b>Withdrawal Request</b>\nUser: {user_id}\nAmount: {amount}\nWallet: {wallet_address}\nCommand: <code>/pay {user_id} {amount} [TxID]</code>", parse_mode="HTML")
+    
+    # 10% Fee Calculation
+    fee = amount * 0.10
+    net_amount = amount - fee
+
+    bot.send_message(message.chat.id, f"✅ Withdrawal request submitted!\n• Requested: <code>{amount:.4f} SOL</code>\n• Fee (10%): <code>{fee:.4f} SOL</code>\n• You Will Get: <code>{net_amount:.4f} SOL</code>", parse_mode="HTML")
+    
+    # Admin notification showing requested amount, 10% fee, and exact net amount to send
+    admin_msg = (
+        f"🚨 <b>Withdrawal Request</b>\n"
+        f"User: <code>{user_id}</code>\n"
+        f"Requested Amt: <code>{amount:.4f} SOL</code>\n"
+        f"Fee (10%): <code>{fee:.4f} SOL</code>\n"
+        f"👉 <b>Net Send to User:</b> <code>{net_amount:.4f} SOL</code>\n"
+        f"Wallet: <code>{wallet_address}</code>\n\n"
+        f"Command to Pay:\n<code>/pay {user_id} {net_amount} [TxID]</code>"
+    )
+    bot.send_message(ADMIN_ID, admin_msg, parse_mode="HTML")
 
 @bot.message_handler(commands=["pay"])
 def admin_pay(message):
