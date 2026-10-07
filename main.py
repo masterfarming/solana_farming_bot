@@ -246,7 +246,7 @@ def update_team_business_recursive(conn, user_id, amount):
 def check_and_update_rank(user_id):
     conn = get_db()
     directs = conn.execute(
-        "SELECT user_id, total_investment FROM users WHERE referrer_id=?",
+        "SELECT user_id, COALESCE(self_farming, 0) FROM users WHERE referrer_id=?",
         (user_id,),
     ).fetchall()
     
