@@ -107,6 +107,11 @@ def init_db():
         plan_name TEXT,
         total_team_business REAL DEFAULT 0
     )""")
+    # Add last_withdrawal_date column if it doesn't exist
+    try:
+        c.execute("ALTER TABLE users ADD COLUMN last_withdrawal_date TEXT")
+    except sqlite3.OperationalError:
+        pass
 
     c.execute("""CREATE TABLE IF NOT EXISTS transactions (txid TEXT PRIMARY KEY)""")
 
