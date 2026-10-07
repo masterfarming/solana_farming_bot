@@ -125,6 +125,7 @@ def init_db():
         user_id INTEGER NOT NULL,
         amount REAL NOT NULL,
         wallet_address TEXT NOT NULL,
+        txid TEXT DEFAULT 'Pending',
         status TEXT DEFAULT 'Paid',
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )""")
@@ -945,9 +946,23 @@ def execute_broadcast(message):
         parse_mode="HTML"
     )
 
-# --- WITHDRAWAL HANDLERS ---
-@bot.message_handler(func=lambda m: m.text and "Withdraw" in m.text)
-def withdraw_request_start(message):
+# --- WITHDRAWAL & HISTORY HANDLERS (Fixed conflict & TxID included) ---
+@bot.message_handler(func=lambda m: m.text == "📜 Withdrawal History")
+def withdrawal_history(message):
+    conn = get_db()
+    rows = conn.execute("SELECT amount, status, txid, created_at FROM withdrawals WHERE user_id = ? ORDER BY id DESC LIMIT 10", (message.from_user.id,)).fetchall()
+    conn.close()
+    if not rows:
+        bot.send_message(message.chat.id, "📜 <b>Withdrawal History</b>\n\nYou have no past withdrawals.", parse_mode="HTML")
+        return
+    
+    text = "📜 <b>Your Recent Withdrawals:</b>\n\n"
+    for amt, status, txid, date in rows:
+        text += f"• <code>{amt:.4f} SOL</code> | Status: <b>{status}</b>\n  🔗 <b>TxID:</b> <code>{escape(txid)}</code>\n  🕒 <code>{date}</code>\n\n"
+    bot.send_message(message.chat.id, text, parse_mode="HTML")
+
+@bot.message_handler(func=lambda m: m.text and m.text.strip() in ["🎁 Withdraw", "Withdraw"])
+def withdraw_start(message):
     conn = get_db()
     u = conn.execute("SELECT balance FROM users WHERE user_id=?", (message.from_user.id,)).fetchone()
     conn.close()
@@ -980,11 +995,8 @@ def process_withdrawal_amount(message):
 def process_withdrawal_address(message, amount):
     wallet_address = message.text.strip()
     user_id = message.from_user.id
-    fee = amount * 0.10
-    net_amount = amount - fee
-
-    bot.send_message(message.chat.id, f"✅ Withdrawal request submitted! Net: <code>{net_amount:.4f} SOL</code>", parse_mode="HTML")
-    bot.send_message(ADMIN_ID, f"🚨 <b>Withdrawal Request</b>\nUser: {user_id}\nAmount: {amount}\nWallet: {wallet_address}\nCommand: <code>/pay {user_id} {amount}</code>", parse_mode="HTML")
+    bot.send_message(message.chat.id, f"✅ Withdrawal request submitted! Net: <code>{amount * 0.9:.4f} SOL</code>", parse_mode="HTML")
+    bot.send_message(ADMIN_ID, f"🚨 <b>Withdrawal Request</b>\nUser: {user_id}\nAmount: {amount}\nWallet: {wallet_address}\nCommand: <code>/pay {user_id} {amount} [TxID]</code>", parse_mode="HTML")
 
 @bot.message_handler(commands=["pay"])
 def admin_pay(message):
@@ -992,98 +1004,18 @@ def admin_pay(message):
     try:
       args = message.text.split()
       uid, amt = int(args[1]), float(args[2])
+      txid = args[3] if len(args) > 3 else "Paid by Admin"
+      
       conn = get_db()
       conn.execute("UPDATE users SET balance = balance - ?, total_withdrawn = total_withdrawn + ? WHERE user_id = ?", (amt, amt, uid))
-      conn.execute("INSERT INTO withdrawals (user_id, amount, wallet_address) VALUES (?, ?, ?)", (uid, amt, "Admin Processed"))
+      conn.execute("INSERT INTO withdrawals (user_id, amount, wallet_address, txid) VALUES (?, ?, ?, ?)", (uid, amt, "Admin Paid", txid))
       conn.commit()
       conn.close()
-      bot.send_message(uid, f"📤 <b>Paid:</b> <code>{amt} SOL</code> sent!", parse_mode="HTML")
-      bot.send_message(ADMIN_ID, "✅ <b>Done.</b>", parse_mode="HTML")
+      
+      bot.send_message(uid, f"📤 <b>Paid:</b> <code>{amt} SOL</code> sent!\n🔗 <b>TxID:</b> <code>{txid}</code>", parse_mode="HTML")
+      bot.send_message(ADMIN_ID, "✅ <b>Done & Saved TxID!</b>", parse_mode="HTML")
     except Exception as e:
       bot.send_message(ADMIN_ID, f"Error: {e}", parse_mode="HTML")
-
-# --- WITHDRAWAL HISTORY HANDLER ---
-@bot.message_handler(func=lambda m: m.text == "📜 Withdrawal History")
-def withdrawal_history_handler(message):
-    user_id = message.from_user.id
-    conn = get_db()
-    withdrawals = conn.execute(
-        "SELECT amount, status, created_at FROM withdrawals WHERE user_id = ? ORDER BY id DESC LIMIT 10",
-        (user_id,)
-    ).fetchall()
-    conn.close()
-
-    if not withdrawals:
-        bot.send_message(message.chat.id, "📜 <b>Withdrawal History</b>\n\nYou have no past withdrawals.", parse_mode="HTML")
-        return
-
-    text = "📜 <b>Your Recent Withdrawals:</b>\n\n"
-    for idx, (amt, status, date) in enumerate(withdrawals, 1):
-        text += f"{idx}. Amount: <code>{amt:.4f} SOL</code> | Status: <b>{status}</b>\n   🕒 <code>{date}</code>\n\n"
-
-    bot.send_message(message.chat.id, text, parse_mode="HTML")
-
-# --- ROI & BACKGROUND WORKER (5 MIN SLEEP) ---
-def roi_worker():
-    while True:
-        try:
-            conn = get_db()
-            users = conn.execute("SELECT user_id, self_farming, plan_name, total_earned, rank FROM users WHERE self_farming > 0 AND plan_name IS NOT NULL").fetchall()
-
-            for uid, self_farm, p_id, earned, rank in users:
-                if not p_id:
-                    continue
-                plan_key = str(p_id).strip().lower()
-                if plan_key in PACKAGES:
-                    has_ref = has_direct_referral(conn, uid)
-                    multiplier = 5.0 if has_ref else 2.5
-                    max_allowed_earn = self_farm * multiplier
-
-                    if earned < max_allowed_earn:
-                        roi = self_farm * PACKAGES[plan_key]["roi"]
-                        royalty = 0
-                        for r in RANKS:
-                            if r["name"] == rank:
-                                royalty = r["daily_royalty"]
-                                break
-
-                        total_payout = roi + royalty
-                        conn.execute(
-                            "UPDATE users SET balance = balance + ?, total_earned = total_earned + ?, self_farming_bonus = self_farming_bonus + ?, rank_royalty_bonus = rank_royalty_bonus + ? WHERE user_id=?",
-                            (total_payout, total_payout, roi, royalty, uid),
-                        )
-                        conn.commit()
-
-                        curr = uid
-                        for level_idx, pct in enumerate(OVERRIDE_LEVELS):
-                            res = conn.execute("SELECT referrer_id FROM users WHERE user_id=?", (curr,)).fetchone()
-                            if res and res[0]:
-                                ref_id = res[0]
-                                required_direct_biz = 0.0 if level_idx == 0 else float(level_idx + 1)
-                                if get_user_direct_business(conn, ref_id) >= required_direct_biz:
-                                    override_bonus = roi * pct
-                                    conn.execute(
-                                        "UPDATE users SET balance = balance + ?, total_earned = total_earned + ?, team_farming_override_bonus = COALESCE(team_farming_override_bonus, 0) + ? WHERE user_id = ?",
-                                        (override_bonus, override_bonus, override_bonus, ref_id)
-                                    )
-                                    conn.commit()
-                                curr = ref_id
-                            else:
-                                break
-
-            conn.close()
-            print("ROI worker cycle completed. Sleeping for 5 minutes...")
-        except Exception as e:
-            print(f">>> DEBUG: ROI Worker Error -> {e}")
-
-        time.sleep(300)
-
-@bot.message_handler(func=lambda m: m.text == "🔗 Referral Link")
-def referral_link_handler(message):
-    bot_username = bot.get_me().username
-    user_id = message.from_user.id
-    text = f"<b>🔗 Your Referral Link</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>"
-    bot.send_message(message.chat.id, text, parse_mode="HTML")
 
 # --- TEAM MEMBERS HANDLERS (WITH LEVEL-WISE BUSINESS BREAKDOWN) ---
 @bot.message_handler(func=lambda m: m.text == "👥 Team Members")
@@ -1150,6 +1082,68 @@ def callback_view_level(call):
 
     bot.answer_callback_query(call.id)
     bot.send_message(call.message.chat.id, text[:4000], parse_mode="HTML")
+
+@bot.message_handler(func=lambda m: m.text == "🔗 Referral Link")
+def referral_link_handler(message):
+    bot_username = bot.get_me().username
+    user_id = message.from_user.id
+    text = f"<b>🔗 Your Referral Link</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>"
+    bot.send_message(message.chat.id, text, parse_mode="HTML")
+
+# --- ROI & BACKGROUND WORKER (5 MIN SLEEP) ---
+def roi_worker():
+    while True:
+        try:
+            conn = get_db()
+            users = conn.execute("SELECT user_id, self_farming, plan_name, total_earned, rank FROM users WHERE self_farming > 0 AND plan_name IS NOT NULL").fetchall()
+
+            for uid, self_farm, p_id, earned, rank in users:
+                if not p_id:
+                    continue
+                plan_key = str(p_id).strip().lower()
+                if plan_key in PACKAGES:
+                    has_ref = has_direct_referral(conn, uid)
+                    multiplier = 5.0 if has_ref else 2.5
+                    max_allowed_earn = self_farm * multiplier
+
+                    if earned < max_allowed_earn:
+                        roi = self_farm * PACKAGES[plan_key]["roi"]
+                        royalty = 0
+                        for r in RANKS:
+                            if r["name"] == rank:
+                                royalty = r["daily_royalty"]
+                                break
+
+                        total_payout = roi + royalty
+                        conn.execute(
+                            "UPDATE users SET balance = balance + ?, total_earned = total_earned + ?, self_farming_bonus = self_farming_bonus + ?, rank_royalty_bonus = rank_royalty_bonus + ? WHERE user_id=?",
+                            (total_payout, total_payout, roi, royalty, uid),
+                        )
+                        conn.commit()
+
+                        curr = uid
+                        for level_idx, pct in enumerate(OVERRIDE_LEVELS):
+                            res = conn.execute("SELECT referrer_id FROM users WHERE user_id=?", (curr,)).fetchone()
+                            if res and res[0]:
+                                ref_id = res[0]
+                                required_direct_biz = 0.0 if level_idx == 0 else float(level_idx + 1)
+                                if get_user_direct_business(conn, ref_id) >= required_direct_biz:
+                                    override_bonus = roi * pct
+                                    conn.execute(
+                                        "UPDATE users SET balance = balance + ?, total_earned = total_earned + ?, team_farming_override_bonus = COALESCE(team_farming_override_bonus, 0) + ? WHERE user_id = ?",
+                                        (override_bonus, override_bonus, override_bonus, ref_id)
+                                    )
+                                    conn.commit()
+                                curr = ref_id
+                            else:
+                                break
+
+            conn.close()
+            print("ROI worker cycle completed. Sleeping for 5 minutes...")
+        except Exception as e:
+            print(f">>> DEBUG: ROI Worker Error -> {e}")
+
+        time.sleep(300)
 
 if __name__ == "__main__":
     Thread(target=roi_worker, daemon=True).start()
