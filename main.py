@@ -433,6 +433,26 @@ def handle_language_selection(call):
         )
     except Exception:
         bot.send_message(call.message.chat.id, success_msg)
+@bot.message_handler(func=lambda message: message.text == "🌐 Change Language")
+def language_text_handler(message):
+    user_id = message.from_user.id
+    # Database se user ki language nikalte hain (default 'en')
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT language FROM users WHERE user_id = ?", (user_id,))
+    row = cursor.fetchone()
+    conn.close()
+    
+    lang = row["language"] if row and "language" in row.keys() else "en"
+    
+    # Translation dictionary se text fetch karenge (agar available ho, nahi toh fallback English)
+    select_text = translations.get(lang, translations.get("en", {})).get("select_language", "🌐 Please select your language:")
+    
+    bot.send_message(
+        message.chat.id,
+        select_text,
+        reply_markup=get_language_keyboard()
+    )
 
 # Command handler to open the language selection menu
 @bot.message_handler(commands=['language', 'lang'])
