@@ -46,17 +46,14 @@ PACKAGES = {
     "galaxy": {"name": "GALAXY", "roi": 0.02, "min": 25.10, "max": 1000.00, "cap": 2.5}
 }
 
-# --- 5-LEVEL DIRECT REFERRAL INCOME PERCENTAGES ---
 REF_LEVELS = [0.05, 0.04, 0.03, 0.02, 0.01]
 
-# --- 25-LEVEL OVERRIDE BONUS PERCENTAGES ---
 OVERRIDE_LEVELS = [
     0.15, 0.10, 0.05, 0.03, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02,
     0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02,
     0.02, 0.03, 0.05, 0.10, 0.15
 ]
 
-# --- RANKS & ROYALTY ---
 RANKS = [
     {"level": 1, "name": "Star", "target": 30, "strongest_leg_min": 12, "other_legs_min": 18, "daily_royalty": 0.03},
     {"level": 2, "name": "Orbit", "target": 100, "strongest_leg_min": 40, "other_legs_min": 60, "daily_royalty": 0.10},
@@ -146,61 +143,202 @@ translations = {
     "en": {
         "select_lang": "🌐 Please select your language:",
         "lang_changed": "✅ Language updated to English!",
-        "welcome": "🚜 <b>Welcome to {PROJECT_NAME}</b>\n\nUse the buttons below to start your investment journey.",
-        "btn_plans": "💎 Farming Plans",
-        "btn_deposit": "💰 Deposit SOL",
-        "btn_dashboard": "📊 Dashboard",
-        "btn_withdraw": "🎁 Withdraw",
-        "btn_ref": "🔗 Referral Link",
-        "btn_team": "👥 Team Members",
-        "btn_ranks": "🏆 Ranks & Royalty",
-        "btn_history": "📜 Withdrawal History",
-        "btn_lang": "🌐 Change Language"
+        "welcome": "🚜 <b>Welcome to {PROJECT_NAME}</b>\n\nUse the buttons below to start your farming journey.",
+        "farming_packages": (
+            "<b>💎 Farming Packages (Max Cap: 250% for Self, 500% with Team):</b>\n\n"
+            "1️⃣ <b>STARTER</b>\n• Limit: 0.10 - 2.0 SOL\n• Reward: 0.5% Daily\n\n"
+            "2️⃣ <b>ADVANCE</b>\n• Limit: 2.10 - 10.0 SOL\n• Reward: 1.0% Daily\n\n"
+            "3️⃣ <b>PREMIUM</b>\n• Limit: 10.10 - 25.0 SOL\n• Reward: 1.5% Daily\n\n"
+            "4️⃣ <b>GALAXY</b>\n• Limit: 25.10 - 1000 SOL\n• Reward: 2.0% Daily\n\n"
+            "⚠️ <i>Note: Base cap is 250%. Referring at least one active user upgrades max cap to 500%.</i>"
+        ),
+        "deposit_prompt": "💰 <b>Deposit SOL</b>\n\nPlease scan the QR code above or copy the address below to deposit SOL:\n\n<code>{wallet_address}</code>\n\n⚠ <i>Send only SOL to this address.</i>\n\n📝 <i>After sending, please send your Transaction Hash (TxID) here to activate your ID!</i>",
+        "no_history": "📜 <b>Withdrawal History</b>\n\nYou have no past withdrawals.",
+        "history_title": "📜 <b>Your Recent Withdrawals:</b>\n\n",
+        "min_withdraw": "❌ <b>Minimum withdrawal limit is</b> <code>0.01 SOL</code>.",
+        "withdraw_prompt": "💰 <b>Available Balance:</b> <code>{bal:.4f} SOL</code>\n\nEnter amount:",
+        "team_empty": "👥 You don't have any team members yet.",
+        "ref_text": "<b>🔗 Your Referral Link</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>"
     },
     "ru": {
         "select_lang": "🌐 Пожалуйста, выберите язык:",
         "lang_changed": "✅ Язык успешно изменен на русский!",
-        "welcome": "🚜 <b>Добро пожаловать в {PROJECT_NAME}</b>\n\nИспользуйте кнопки ниже, чтобы начать инвестиционный путь.",
+        "welcome": "🚜 <b>Добро пожаловать в {PROJECT_NAME}</b>\n\nИспользуйте кнопки ниже, чтобы начать путь фарминга.",
+        "farming_packages": (
+            "<b>💎 Пакеты фарминга (Макс. лимит: 250% для себя, 500% с командой):</b>\n\n"
+            "1️⃣ <b>STARTER</b>\n• Лимит: 0.10 - 2.0 SOL\n• Награда: 0.5% в день\n\n"
+            "2️⃣ <b>ADVANCE</b>\n• Лимит: 2.10 - 10.0 SOL\n• Награда: 1.0% в день\n\n"
+            "3️⃣ <b>PREMIUM</b>\n• Лимит: 10.10 - 25.0 SOL\n• Награда: 1.5% в день\n\n"
+            "4️⃣ <b>GALAXY</b>\n• Лимит: 25.10 - 1000 SOL\n• Награда: 2.0% в день\n\n"
+            "⚠️ <i>Примечание: Базовый лимит 250%. Приглашение активного пользователя увеличивает лимит до 500%.</i>"
+        ),
+        "deposit_prompt": "💰 <b>Депозит SOL</b>\n\nОтсканируйте QR-код или скопируйте адрес для депозита:\n\n<code>{wallet_address}</code>\n\n⚠ <i>Отправляйте только SOL.</i>\n\n📝 <i>После отправки отправьте TxID сюда!</i>",
+        "no_history": "📜 <b>История выводов</b>\n\nУ вас нет прошлых выводов.",
+        "history_title": "📜 <b>Ваши недавние выводы:</b>\n\n",
+        "min_withdraw": "❌ <b>Минимальный лимит вывода:</b> <code>0.01 SOL</code>.",
+        "withdraw_prompt": "💰 <b>Доступный баланс:</b> <code>{bal:.4f} SOL</code>\n\nВведите сумму:",
+        "team_empty": "👥 У вас пока нет участников команды.",
+        "ref_text": "<b>🔗 Ваша реферальная ссылка</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>"
     },
     "zh": {
         "select_lang": "🌐 请选择您的语言：",
         "lang_changed": "✅ 语言已更新为中文！",
-        "welcome": "🚜 <b>欢迎来到 {PROJECT_NAME}</b>\n\n使用下方的按钮开始您的投资之旅。",
+        "welcome": "🚜 <b>欢迎来到 {PROJECT_NAME}</b>\n\n使用下方的按钮开始您的耕作之旅。",
+        "farming_packages": (
+            "<b>💎 挖矿套餐（个人上限 250%，团队上限 500%）：</b>\n\n"
+            "1️⃣ <b>STARTER</b>\n• 限制：0.10 - 2.0 SOL\n• 每日奖励：0.5%\n\n"
+            "2️⃣ <b>ADVANCE</b>\n• 限制：2.10 - 10.0 SOL\n• 每日奖励：1.0%\n\n"
+            "3️⃣ <b>PREMIUM</b>\n• 限制：10.10 - 25.0 SOL\n• 每日奖励：1.5%\n\n"
+            "4️⃣ <b>GALAXY</b>\n• 限制：25.10 - 1000 SOL\n• 每日奖励：2.0%\n\n"
+            "⚠️ <i>注意：基础上限为 250%，推荐至少一名活跃用户可提升至 500%。</i>"
+        ),
+        "deposit_prompt": "💰 <b>存款 SOL</b>\n\n请扫描上方二维码或复制地址进行存款：\n\n<code>{wallet_address}</code>\n\n⚠ <i>仅限发送 SOL。</i>\n\n📝 <i>发送后请将交易哈希 (TxID) 发送至此处！</i>",
+        "no_history": "📜 <b>提现记录</b>\n\n您没有历史提现记录。",
+        "history_title": "📜 <b>您最近的提现：</b>\n\n",
+        "min_withdraw": "❌ <b>最低提现额度为</b> <code>0.01 SOL</code>。",
+        "withdraw_prompt": "💰 <b>可用余额：</b> <code>{bal:.4f} SOL</code>\n\n请输入金额：",
+        "team_empty": "👥 您还没有团队成员。",
+        "ref_text": "<b>🔗 您的推荐链接</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>"
     },
     "vi": {
         "select_lang": "🌐 Vui lòng chọn ngôn ngữ của bạn:",
         "lang_changed": "✅ Đã cập nhật ngôn ngữ thành Tiếng Việt!",
-        "welcome": "🚜 <b>Chào mừng bạn đến với {PROJECT_NAME}</b>\n\nSử dụng các nút bên dưới để bắt đầu hành trình đầu tư của bạn.",
+        "welcome": "🚜 <b>Chào mừng đến với {PROJECT_NAME}</b>\n\nSử dụng các nút bên dưới để bắt đầu hành trình canh tác của bạn.",
+        "farming_packages": (
+            "<b>💎 Gói Khai Thác (Giới hạn tối đa: 250% cá nhân, 500% với đội ngũ):</b>\n\n"
+            "1️⃣ <b>STARTER</b>\n• Giới hạn: 0.10 - 2.0 SOL\n• Thưởng: 0.5% Mỗi ngày\n\n"
+            "2️⃣ <b>ADVANCE</b>\n• Giới hạn: 2.10 - 10.0 SOL\n• Thưởng: 1.0% Mỗi ngày\n\n"
+            "3️⃣ <b>PREMIUM</b>\n• Giới hạn: 10.10 - 25.0 SOL\n• Thưởng: 1.5% Mỗi ngày\n\n"
+            "4️⃣ <b>GALAXY</b>\n• Giới hạn: 25.10 - 1000 SOL\n• Thưởng: 2.0% Mỗi ngày\n\n"
+            "⚠️ <i>Lưu ý: Giới hạn gốc là 250%. Giới thiệu 1 người dùng hoạt động nâng cấp lên 500%.</i>"
+        ),
+        "deposit_prompt": "💰 <b>Nạp SOL</b>\n\nVui lòng quét mã QR hoặc sao chép địa chỉ để nạp:\n\n<code>{wallet_address}</code>\n\n⚠ <i>Chỉ gửi SOL.</i>\n\n📝 <i>Sau khi gửi, hãy gửi Mã giao dịch (TxID) vào đây!</i>",
+        "no_history": "📜 <b>Lịch sử rút tiền</b>\n\nBạn chưa có lịch sử rút tiền.",
+        "history_title": "📜 <b>Các lần rút gần đây:</b>\n\n",
+        "min_withdraw": "❌ <b>Hạn mức rút tối thiểu là</b> <code>0.01 SOL</code>.",
+        "withdraw_prompt": "💰 <b>Số dư khả dụng:</b> <code>{bal:.4f} SOL</code>\n\nNhập số tiền:",
+        "team_empty": "👥 Bạn chưa có thành viên nhóm nào.",
+        "ref_text": "<b>🔗 Liên kết giới thiệu của bạn</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>"
     },
     "id": {
         "select_lang": "🌐 Silakan pilih bahasa Anda:",
         "lang_changed": "✅ Bahasa berhasil diubah ke Bahasa Indonesia!",
-        "welcome": "🚜 <b>Selamat datang di {PROJECT_NAME}</b>\n\nGunakan tombol di bawah untuk memulai perjalanan investasi Anda.",
+        "welcome": "🚜 <b>Selamat datang di {PROJECT_NAME}</b>\n\nGunakan tombol di bawah untuk memulai perjalanan farming Anda.",
+        "farming_packages": (
+            "<b>💎 Paket Farming (Batas Maks: 250% Mandiri, 500% dengan Tim):</b>\n\n"
+            "1️⃣ <b>STARTER</b>\n• Batas: 0.10 - 2.0 SOL\n• Hadiah: 0.5% per Hari\n\n"
+            "2️⃣ <b>ADVANCE</b>\n• Batas: 2.10 - 10.0 SOL\n• Hadiah: 1.0% per Hari\n\n"
+            "3️⃣ <b>PREMIUM</b>\n• Batas: 10.10 - 25.0 SOL\n• Hadiah: 1.5% per Hari\n\n"
+            "4️⃣ <b>GALAXY</b>\n• Batas: 25.10 - 1000 SOL\n• Hadiah: 2.0% per Hari\n\n"
+            "⚠️ <i>Catatan: Batas dasar 250%. Referensikan 1 pengguna aktif untuk meningkatkan ke 500%.</i>"
+        ),
+        "deposit_prompt": "💰 <b>Deposit SOL</b>\n\nSilakan pindai QR code atau salin alamat untuk deposit:\n\n<code>{wallet_address}</code>\n\n⚠ <i>Kirim hanya SOL.</i>\n\n📝 <i>Setelah mengirim, kirimkan TxID Anda ke sini!</i>",
+        "no_history": "📜 <b>Riwayat Penarikan</b>\n\nAnda tidak memiliki riwayat penarikan.",
+        "history_title": "📜 <b>Penarikan Terbaru Anda:</b>\n\n",
+        "min_withdraw": "❌ <b>Batas penarikan minimum adalah</b> <code>0.01 SOL</code>.",
+        "withdraw_prompt": "💰 <b>Saldo Tersedia:</b> <code>{bal:.4f} SOL</code>\n\nMasukkan jumlah:",
+        "team_empty": "👥 Anda belum memiliki anggota tim.",
+        "ref_text": "<b>🔗 Tautan Referensi Anda</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>"
     },
     "th": {
         "select_lang": "🌐 กรุณาเลือกภาษาของคุณ:",
         "lang_changed": "✅ เปลี่ยนภาษาเป็นภาษาไทยเรียบร้อยแล้ว!",
-        "welcome": "🚜 <b>ยินดีต้อนรับสู่ {PROJECT_NAME}</b>\n\nใช้ปุ่มด้านล่างเพื่อเริ่มต้นการลงทุนของคุณ",
+        "welcome": "🚜 <b>ยินดีต้อนรับสู่ {PROJECT_NAME}</b>\n\nใช้ปุ่มด้านล่างเพื่อเริ่มต้นการทำฟาร์มของคุณ",
+        "farming_packages": (
+            "<b>💎 แพ็คเกจฟาร์ม (ขีดจำกัดสูงสุด: 250% สำหรับส่วนตัว, 500% กับทีม):</b>\n\n"
+            "1️⃣ <b>STARTER</b>\n• ขีดจำกัด: 0.10 - 2.0 SOL\n• รางวัล: 0.5% ต่อวัน\n\n"
+            "2️⃣ <b>ADVANCE</b>\n• ขีดจำกัด: 2.10 - 10.0 SOL\n• รางวัล: 1.0% ต่อวัน\n\n"
+            "3️⃣ <b>PREMIUM</b>\n• ขีดจำกัด: 10.10 - 25.0 SOL\n• รางวัล: 1.5% ต่อวัน\n\n"
+            "4️⃣ <b>GALAXY</b>\n• ขีดจำกัด: 25.10 - 1000 SOL\n• รางวัล: 2.0% ต่อวัน\n\n"
+            "⚠️ <i>หมายเหตุ: ขีดจำกัดพื้นฐานคือ 250% แนะนำผู้ใช้งานที่ใช้งานอยู่ 1 คนเพื่อเพิ่มเป็น 500%</i>"
+        ),
+        "deposit_prompt": "💰 <b>ฝาก SOL</b>\n\nกรุณาสแกน QR โค้ดหรือคัดลอกที่อยู่เพื่อฝาก SOL:\n\n<code>{wallet_address}</code>\n\n⚠ <i>ส่งเฉพาะ SOL เท่านั้น</i>\n\n📝 <i>หลังจากส่งแล้ว โปรดส่งรหัสธุรกรรม (TxID) ที่นี่!</i>",
+        "no_history": "📜 <b>ประวัติการถอน</b>\n\nคุณไม่มีประวัติการถอนเงิน",
+        "history_title": "📜 <b>การถอนเงินล่าสุดของคุณ:</b>\n\n",
+        "min_withdraw": "❌ <b>ขีดจำกัดการถอนขั้นต่ำคือ</b> <code>0.01 SOL</code>",
+        "withdraw_prompt": "💰 <b>ยอดเงินคงเหลือ:</b> <code>{bal:.4f} SOL</code>\n\nป้อนจำนวนเงิน:",
+        "team_empty": "👥 คุณยังไม่มีสมาชิกในทีม",
+        "ref_text": "<b>🔗 ลิงก์แนะนำของคุณ</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>"
     },
     "ar": {
         "select_lang": "🌐 الرجاء اختيار لغتك:",
         "lang_changed": "✅ تم تحديث اللغة إلى العربية!",
-        "welcome": "🚜 <b>مرحباً بك في {PROJECT_NAME}</b>\n\nاستخدم الأزرار أدناه لبدء رحلة الاستثمار الخاصة بك.",
+        "welcome": "🚜 <b>مرحباً بك في {PROJECT_NAME}</b>\n\nاستخدم الأزرار أدناه لبدء رحلة الزراعة الخاصة بك.",
+        "farming_packages": (
+            "<b>💎 باقات الزراعة (الحد الأقصى: 250% للشخصي، 500% مع الفريق):</b>\n\n"
+            "1️⃣ <b>STARTER</b>\n• الحد: 0.10 - 2.0 SOL\n• المكافأة: 0.5% يومياً\n\n"
+            "2️⃣ <b>ADVANCE</b>\n• الحد: 2.10 - 10.0 SOL\n• المكافأة: 1.0% يومياً\n\n"
+            "3️⃣ <b>PREMIUM</b>\n• الحد: 10.10 - 25.0 SOL\n• المكافأة: 1.5% يومياً\n\n"
+            "4️⃣ <b>GALAXY</b>\n• الحد: 25.10 - 1000 SOL\n• المكافأة: 2.0% يومياً\n\n"
+            "⚠️ <i>ملاحظة: الحد الأساسي هو 250%. إحالة مستخدم نشط واحد ترفع الحد إلى 500%.</i>"
+        ),
+        "deposit_prompt": "💰 <b>إيداع SOL</b>\n\nيرجى مسح رمز الاستجابة السريعة أو نسخ العنوان للإيداع:\n\n<code>{wallet_address}</code>\n\n⚠ <i>أرسل SOL فقط.</i>\n\n📝 <i>بعد الإرسال، أرسل رقم المعاملة (TxID) هنا!</i>",
+        "no_history": "📜 <b>سجل السحب</b>\n\nليس لديك عمليات سحب سابقة.",
+        "history_title": "📜 <b>عمليات السحب الأخيرة:</b>\n\n",
+        "min_withdraw": "❌ <b>الحد الأدنى للسحب هو</b> <code>0.01 SOL</code>.",
+        "withdraw_prompt": "💰 <b>الرصيد المتاح:</b> <code>{bal:.4f} SOL</code>\n\nأدخل المبلغ:",
+        "team_empty": "👥 ليس لديك أي أعضاء في الفريق حتى الآن.",
+        "ref_text": "<b>🔗 رابط الإحالة الخاص بك</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>"
     },
     "hi": {
         "select_lang": "🌐 कृपया अपनी भाषा चुनें:",
         "lang_changed": "✅ भाषा बदलकर हिंदी कर दी गई है!",
-        "welcome": "🚜 <b>{PROJECT_NAME} में आपका स्वागत है</b>\n\nअपनी निवेश यात्रा शुरू करने के लिए नीचे दिए गए बटनों का उपयोग करें।",
+        "welcome": "🚜 <b>{PROJECT_NAME} में आपका स्वागत है</b>\n\nअपनी फार्मिंग यात्रा शुरू करने के लिए नीचे दिए गए बटनों का उपयोग करें।",
+        "farming_packages": (
+            "<b>💎 फार्मing पैकेज (अधिकतम कैप: स्वयं के लिए 250%, टीम के साथ 500%):</b>\n\n"
+            "1️⃣ <b>STARTER</b>\n• सीमा: 0.10 - 2.0 SOL\n• इनाम: 0.5% प्रतिदिन\n\n"
+            "2️⃣ <b>ADVANCE</b>\n• सीमा: 2.10 - 10.0 SOL\n• इनाम: 1.0% प्रतिदिन\n\n"
+            "3️⃣ <b>PREMIUM</b>\n• सीमा: 10.10 - 25.0 SOL\n• इनाम: 1.5% प्रतिदिन\n\n"
+            "4️⃣ <b>GALAXY</b>\n• सीमा: 25.10 - 1000 SOL\n• इनाम: 2.0% प्रतिदिन\n\n"
+            "⚠️ <i>नोट: बेस कैप 250% है। कम से कम एक सक्रिय उपयोगकर्ता को रेफर करने पर कैप 500% हो जाता है।</i>"
+        ),
+        "deposit_prompt": "💰 <b>SOL जमा करें</b>\n\nकृपया SOL जमा करने के लिए ऊपर दिए गए QR कोड को स्कैन करें या नीचे दिए गए पते को कॉपी करें:\n\n<code>{wallet_address}</code>\n\n⚠ <i>इस पते पर केवल SOL भेजें।</i>\n\n📝 <i>भेजने के बाद, अपनी आईडी सक्रिय करने के लिए यहाँ Transaction Hash (TxID) भेजें!</i>",
+        "no_history": "📜 <b>निकासी इतिहास</b>\n\nआपका कोई पिछلا निकासी रिकॉर्ड नहीं है।",
+        "history_title": "📜 <b>आपकी हालिया निकासी:</b>\n\n",
+        "min_withdraw": "❌ <b>न्यूनतम निकासी सीमा</b> <code>0.01 SOL</code> <b>है।</b>",
+        "withdraw_prompt": "💰 <b>उपलब्ध शेष राशि:</b> <code>{bal:.4f} SOL</code>\n\nराशि दर्ज करें:",
+        "team_empty": "👥 आपका अभी तक कोई टीम मेंबर नहीं है।",
+        "ref_text": "<b>🔗 आपका रेफरल लिंक</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>"
     },
     "bn": {
         "select_lang": "🌐 অনুগ্রহ করে আপনার ভাষা নির্বাচন করুন:",
         "lang_changed": "✅ ভাষা সফলভাবে বাংলায় আপডেট করা হয়েছে!",
-        "welcome": "🚜 <b>{PROJECT_NAME}-এ আপনাকে স্বাগতম</b>\n\nআপনার বিনিয়োগ যাত্রা শুরু করতে নিচের বোতামগুলি ব্যবহার করুন।",
+        "welcome": "🚜 <b>{PROJECT_NAME}-এ আপনাকে স্বাগতম</b>\n\nআপনার ফার্মিং যাত্রা শুরু করতে নিচের বোতামগুলি ব্যবহার করুন।",
+        "farming_packages": (
+            "<b>💎 ফার্মিং প্যাকেজ (সর্বোচ্চ ক্যাপ: নিজের জন্য ২৫০%, টিমের সাথে ৫০০%):</b>\n\n"
+            "1️⃣ <b>STARTER</b>\n• সীমা: 0.10 - 2.0 SOL\n• পুরস্কার: প্রতিদিন 0.5%\n\n"
+            "2️⃣ <b>ADVANCE</b>\n• সীমা: 2.10 - 10.0 SOL\n• পুরস্কার: প্রতিদিন 1.0%\n\n"
+            "3️⃣ <b>PREMIUM</b>\n• সীমা: 10.10 - 25.0 SOL\n• পুরস্কার: প্রতিদিন 1.5%\n\n"
+            "4️⃣ <b>GALAXY</b>\n• সীমা: 25.10 - 1000 SOL\n• পুরস্কার: প্রতিদিন 2.0%\n\n"
+            "⚠️ <i>দ্রষ্টব্য: বেস ক্যাপ ২৫০%। কমপক্ষে একজন সক্রিয় ব্যবহারকারীকে রেফার করলে ৫০০% হয়।</i>"
+        ),
+        "deposit_prompt": "💰 <b>SOL জমা করুন</b>\n\nদয়া করে SOL জমা করতে QR কোড স্ক্যান করুন বা নিচের ঠিকানাটি কপি করুন:\n\n<code>{wallet_address}</code>\n\n⚠ <i>শুধুমাত্র SOL পাঠান।</i>\n\n📝 <i>পাঠানোর পরে, আপনার আইডি সক্রিয় করতে এখানে TxID পাঠান!</i>",
+        "no_history": "📜 <b>উত্তোলনের ইতিহাস</b>\n\nআপনার কোনো পূর্ববর্তী উত্তোলন নেই।",
+        "history_title": "📜 <b>আপনার সাম্প্রতিক উত্তোলন:</b>\n\n",
+        "min_withdraw": "❌ <b>সর্বনিম্ন উত্তোলনের সীমা হলো</b> <code>0.01 SOL</code>।",
+        "withdraw_prompt": "💰 <b>উপলব্ধ ব্যালেন্স:</b> <code>{bal:.4f} SOL</code>\n\nপরিমাণ লিখুন:",
+        "team_empty": "👥 আপনার এখনও কোনো টিম মেম্বার নেই।",
+        "ref_text": "<b>🔗 আপনার রেফারেল লিংক</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>"
     },
     "ng": {
         "select_lang": "🌐 Abeg select your language:",
         "lang_changed": "✅ Language don change to Naija Pidgin!",
-        "welcome": "🚜 <b>Welcome to {PROJECT_NAME}</b>\n\nUse the buttons below to start your investment journey.",
+        "welcome": "🚜 <b>Welcome to {PROJECT_NAME}</b>\n\nUse the buttons below to start your farming journey.",
+        "farming_packages": (
+            "<b>💎 Farming Packages (Max Cap: 250% for Self, 500% with Team):</b>\n\n"
+            "1️⃣ <b>STARTER</b>\n• Limit: 0.10 - 2.0 SOL\n• Reward: 0.5% Daily\n\n"
+            "2️⃣ <b>ADVANCE</b>\n• Limit: 2.10 - 10.0 SOL\n• Reward: 1.0% Daily\n\n"
+            "3️⃣ <b>PREMIUM</b>\n• Limit: 10.10 - 25.0 SOL\n• Reward: 1.5% Daily\n\n"
+            "4️⃣ <b>GALAXY</b>\n• Limit: 25.10 - 1000 SOL\n• Reward: 2.0% Daily\n\n"
+            "⚠️ <i>Note: Base cap na 250%. Referring at least one active user go upgrade am to 500%.</i>"
+        ),
+        "deposit_prompt": "💰 <b>Deposit SOL</b>\n\nScan the QR code above or copy the address to deposit SOL:\n\n<code>{wallet_address}</code>\n\n⚠ <i>Send only SOL to this address.</i>\n\n📝 <i>After sending, send your Transaction Hash (TxID) here to activate your ID!</i>",
+        "no_history": "📜 <b>Withdrawal History</b>\n\nYou no get any past withdrawals.",
+        "history_title": "📜 <b>Your Recent Withdrawals:</b>\n\n",
+        "min_withdraw": "❌ <b>Minimum withdrawal limit na</b> <code>0.01 SOL</code>.",
+        "withdraw_prompt": "💰 <b>Available Balance:</b> <code>{bal:.4f} SOL</code>\n\nEnter amount:",
+        "team_empty": "👥 You no get any team members yet.",
+        "ref_text": "<b>🔗 Your Referral Link</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>"
     }
 }
 
@@ -466,7 +604,7 @@ def start(message):
 
     user_id = message.from_user.id
     lang = get_user_language(user_id)
-    welcome_template = translations.get(lang, translations["en"]).get("welcome", "🚜 <b>Welcome to {PROJECT_NAME}</b>\n\nUse the buttons below to start your investment journey.")
+    welcome_template = translations.get(lang, translations["en"]).get("welcome", "🚜 <b>Welcome to {PROJECT_NAME}</b>\n\nUse the buttons below to start your farming journey.")
     welcome_text = welcome_template.format(PROJECT_NAME=PROJECT_NAME)
 
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
@@ -487,37 +625,19 @@ def start(message):
 def farming_plans(message):
     user_id = message.from_user.id
     lang = get_user_language(user_id)
-    
-    default_text = (
-        "<b>💎 Farming Packages (Max Cap: 250% for Self, 500% with Team):</b>\n\n"
-        "1️⃣ <b>STARTER</b>\n"
-        "• Limit: 0.10 - 2.0 SOL\n"
-        "• Reward: 0.5% Daily\n\n"
-        "2️⃣ <b>ADVANCE</b>\n"
-        "• Limit: 2.10 - 10.0 SOL\n"
-        "• Reward: 1.0% Daily\n\n"
-        "3️⃣ <b>PREMIUM</b>\n"
-        "• Limit: 10.10 - 25.0 SOL\n"
-        "• Reward: 1.5% Daily\n\n"
-        "4️⃣ <b>GALAXY</b>\n"
-        "• Limit: 25.10 - 1000 SOL\n"
-        "• Reward: 2.0% Daily\n\n"
-        "⚠️ <i>Note: Base cap is 250%. Referring at least one active user upgrades max cap to 500%.</i>"
-    )
-    text = translations.get(lang, translations.get("en", {})).get("farming_packages", default_text)
+    text = translations.get(lang, translations.get("en", {})).get("farming_packages", translations["en"]["farming_packages"])
     bot.send_message(message.chat.id, text, parse_mode="HTML")
 
 @bot.message_handler(func=lambda m: m.text == "💰 Deposit SOL")
 def deposit_sol(message):
+    user_id = message.from_user.id
+    lang = get_user_language(user_id)
     wallet_address = ADMIN_WALLET  
     qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=250x250&data={wallet_address}"
-    caption = (
-        f"💰 <b>Deposit SOL</b>\n\n"
-        f"Please scan the QR code above or copy the address below to deposit SOL:\n\n"
-        f"<code>{wallet_address}</code>\n\n"
-        f"⚠ <i>Send only SOL to this address.</i>\n\n"
-        f"📝 <i>After sending, please send your Transaction Hash (TxID) here to activate your ID!</i>"
-    )
+    
+    template = translations.get(lang, translations["en"]).get("deposit_prompt", translations["en"]["deposit_prompt"])
+    caption = template.format(wallet_address=wallet_address)
+    
     sent = bot.send_photo(message.chat.id, photo=qr_url, caption=caption, parse_mode="HTML")
     bot.register_next_step_handler(sent, process_deposit)
 
@@ -1058,14 +1178,20 @@ def execute_broadcast(message):
 
 @bot.message_handler(func=lambda m: m.text == "📜 Withdrawal History")
 def withdrawal_history(message):
+    user_id = message.from_user.id
+    lang = get_user_language(user_id)
+    
     conn = get_db()
-    rows = conn.execute("SELECT amount, status, txid, created_at FROM withdrawals WHERE user_id = ? ORDER BY id DESC LIMIT 10", (message.from_user.id,)).fetchall()
+    rows = conn.execute("SELECT amount, status, txid, created_at FROM withdrawals WHERE user_id = ? ORDER BY id DESC LIMIT 10", (user_id,)).fetchall()
     conn.close()
+    
     if not rows:
-        bot.send_message(message.chat.id, "📜 <b>Withdrawal History</b>\n\nYou have no past withdrawals.", parse_mode="HTML")
+        no_hist_text = translations.get(lang, translations["en"]).get("no_history", translations["en"]["no_history"])
+        bot.send_message(message.chat.id, no_hist_text, parse_mode="HTML")
         return
     
-    text = "📜 <b>Your Recent Withdrawals:</b>\n\n"
+    title_text = translations.get(lang, translations["en"]).get("history_title", translations["en"]["history_title"])
+    text = title_text
     for amt, status, txid, date in rows:
         text += f"• <code>{amt:.4f} SOL</code> | Status: <b>{status}</b>\n  🔗 <b>TxID:</b> <code>{escape(txid)}</code>\n  🕒 <code>{date}</code>\n\n"
     bot.send_message(message.chat.id, text, parse_mode="HTML")
@@ -1073,6 +1199,7 @@ def withdrawal_history(message):
 @bot.message_handler(func=lambda m: m.text and m.text.strip() in ["🎁 Withdraw", "Withdraw"])
 def withdraw_start(message):
     user_id = message.from_user.id
+    lang = get_user_language(user_id)
     conn = get_db()
     user_row = conn.execute("SELECT last_withdrawal_date FROM users WHERE user_id=?", (user_id,)).fetchone()
     today_date = datetime.now().strftime("%Y-%m-%d")
@@ -1087,10 +1214,12 @@ def withdraw_start(message):
     
     bal = u[0] if u else 0
     if bal < 0.01:
-        bot.send_message(message.chat.id, "❌ <b>Minimum withdrawal limit is</b> <code>0.01 SOL</code>.", parse_mode="HTML")
+        min_text = translations.get(lang, translations["en"]).get("min_withdraw", translations["en"]["min_withdraw"])
+        bot.send_message(message.chat.id, min_text, parse_mode="HTML")
         return
         
-    msg = bot.send_message(message.chat.id, f"💰 <b>Available Balance:</b> <code>{bal:.4f} SOL</code>\n\nEnter amount:", parse_mode="HTML")
+    prompt_template = translations.get(lang, translations["en"]).get("withdraw_prompt", translations["en"]["withdraw_prompt"])
+    msg = bot.send_message(message.chat.id, prompt_template.format(bal=bal), parse_mode="HTML")
     bot.register_next_step_handler(msg, process_withdrawal_amount)
 
 def process_withdrawal_amount(message):
@@ -1159,9 +1288,10 @@ def admin_pay(message):
 
 @bot.message_handler(func=lambda m: m.text == "👥 Team Members")
 def my_team_handler(message):
-    conn = get_db()
     user_id = message.from_user.id
-
+    lang = get_user_language(user_id)
+    
+    conn = get_db()
     query = """
     WITH RECURSIVE downline(user_id, self_farming, level) AS (
         SELECT user_id, COALESCE(self_farming, 0), 1 AS level FROM users WHERE referrer_id = ?
@@ -1175,7 +1305,8 @@ def my_team_handler(message):
     conn.close()
 
     if not team_data:
-        bot.send_message(message.chat.id, "👥 You don't have any team members yet.", parse_mode="HTML")
+        empty_text = translations.get(lang, translations["en"]).get("team_empty", translations["en"]["team_empty"])
+        bot.send_message(message.chat.id, empty_text, parse_mode="HTML")
         return
 
     total_members = len(team_data)
@@ -1222,9 +1353,12 @@ def callback_view_level(call):
 
 @bot.message_handler(func=lambda m: m.text == "🔗 Referral Link")
 def referral_link_handler(message):
-    bot_username = bot.get_me().username
     user_id = message.from_user.id
-    text = f"<b>🔗 Your Referral Link</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>"
+    lang = get_user_language(user_id)
+    bot_username = bot.get_me().username
+    
+    template = translations.get(lang, translations["en"]).get("ref_text", translations["en"]["ref_text"])
+    text = template.format(bot_username=bot_username, user_id=user_id)
     bot.send_message(message.chat.id, text, parse_mode="HTML")
 
 def roi_worker():
