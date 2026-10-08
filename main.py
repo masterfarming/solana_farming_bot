@@ -138,12 +138,21 @@ def init_db():
 
 init_db()
 
-# --- 10 GLOBAL LANGUAGES TRANSLATIONS ---
+# --- 10 GLOBAL LANGUAGES TRANSLATIONS (INCLUDING MENU BUTTONS) ---
 translations = {
     "en": {
         "select_lang": "🌐 Please select your language:",
         "lang_changed": "✅ Language updated to English!",
         "welcome": "🚜 <b>Welcome to {PROJECT_NAME}</b>\n\nUse the buttons below to start your farming journey.",
+        "btn_plans": "💎 Farming Plans",
+        "btn_deposit": "💰 Deposit SOL",
+        "btn_dashboard": "📊 Dashboard",
+        "btn_withdraw": "🎁 Withdraw",
+        "btn_ref": "🔗 Referral Link",
+        "btn_team": "👥 Team Members",
+        "btn_ranks": "🏆 Ranks & Royalty",
+        "btn_history": "📜 Withdrawal History",
+        "btn_lang": "🌐 Change Language",
         "farming_packages": (
             "<b>💎 Farming Packages (Max Cap: 250% for Self, 500% with Team):</b>\n\n"
             "1️⃣ <b>STARTER</b>\n• Limit: 0.10 - 2.0 SOL\n• Reward: 0.5% Daily\n\n"
@@ -158,12 +167,49 @@ translations = {
         "min_withdraw": "❌ <b>Minimum withdrawal limit is</b> <code>0.01 SOL</code>.",
         "withdraw_prompt": "💰 <b>Available Balance:</b> <code>{bal:.4f} SOL</code>\n\nEnter amount:",
         "team_empty": "👥 You don't have any team members yet.",
-        "ref_text": "<b>🔗 Your Referral Link</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>"
+        "ref_text": "<b>🔗 Your Referral Link</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>",
+        "dashboard_text": (
+            "👤 <b>User Dashboard</b>\n\n"
+            "💰 <b>Available Balance:</b> <code>{balance:.4f} SOL</code>\n"
+            "🌾 <b>Total Self Farming:</b> <code>{self_farming:.4f} SOL</code>\n"
+            "🌾 <b>Self Farming Bonus:</b> <code>{self_bonus:.4f} SOL</code>\n"
+            "👥 <b>Direct Referral Bonus:</b> <code>{direct_ref:.4f} SOL</code>\n"
+            "🤝 <b>Team Referral Bonus:</b> <code>{team_ref:.4f} SOL</code>\n"
+            "🤝 <b>Team Farming Override Bonus:</b> <code>{team_override:.4f} SOL</code>\n"
+            "🏆 <b>Rank & Royalty Bonus:</b> <code>{royalty:.4f} SOL</code>\n"
+            "📈 <b>Total Earned:</b> <code>{earned:.4f} SOL</code> (Max Cap: <code>{max_cap:.2f} SOL</code>)\n\n"
+            "🧁 <b>Total Withdrawals:</b> <code>{withdrawn:.4f} SOL</code>\n"
+            "🎯 <b>Available Withdrawal Limit:</b> <code>{available_limit:.4f} SOL</code>\n\n"
+            "📦 <b>Active Plan:</b> {active_plan}\n"
+            "🏆 <b>Current Rank:</b> {current_rank}"
+        ),
+        "ranks_text": (
+            "🏆 <b>Ranks & Royalty Status</b>\n\n"
+            "<b>• Total Directs:</b> <code>{directs_count}</code> (Active: <code>{active_directs}</code>)\n"
+            "<b>• Direct Business:</b> <code>{direct_biz:.2f} SOL</code>\n"
+            "<b>• Total Team Business:</b> <code>{team_biz:.2f} SOL</code>\n"
+            "<b>• Current Rank:</b> <code>{current_rank_name}</code>\n"
+            "<b>• Next Rank:</b> <code>{next_rank_name}</code>\n\n"
+            "<b>🎯 Progress for Next Rank:</b>\n"
+            "<b>• Total Target ({target} SOL):</b> {total_icon} (Current: {total_volume:.2f})\n\n"
+            "<b>• Leg Requirements Check:</b>\n"
+            "<b> - Strongest Leg (Min {req_strongest} SOL):</b> {strongest_icon} (Current: <code>{highest_leg:.2f}</code>)\n"
+            "<b> - Other Legs Combined (Min {req_other} SOL):</b> {other_icon} (Current: <code>{other_legs_total:.2f}</code>)\n"
+        )
     },
     "ru": {
         "select_lang": "🌐 Пожалуйста, выберите язык:",
         "lang_changed": "✅ Язык успешно изменен на русский!",
         "welcome": "🚜 <b>Добро пожаловать в {PROJECT_NAME}</b>\n\nИспользуйте кнопки ниже, чтобы начать путь фарминга.",
+        "btn_plans": "💎 Пакеты фарминга",
+        "btn_deposit": "💰 Депозит SOL",
+        "btn_dashboard": "📊 Панель",
+        "btn_withdraw": "🎁 Вывод",
+        "btn_ref": "🔗 Реферальная ссылка",
+        "btn_team": "👥 Команда",
+        "btn_ranks": "🏆 Ранги и роялти",
+        "btn_history": "📜 История выводов",
+        "btn_lang": "🌐 Изменить язык",
         "farming_packages": (
             "<b>💎 Пакеты фарминга (Макс. лимит: 250% для себя, 500% с командой):</b>\n\n"
             "1️⃣ <b>STARTER</b>\n• Лимит: 0.10 - 2.0 SOL\n• Награда: 0.5% в день\n\n"
@@ -178,12 +224,49 @@ translations = {
         "min_withdraw": "❌ <b>Минимальный лимит вывода:</b> <code>0.01 SOL</code>.",
         "withdraw_prompt": "💰 <b>Доступный баланс:</b> <code>{bal:.4f} SOL</code>\n\nВведите сумму:",
         "team_empty": "👥 У вас пока нет участников команды.",
-        "ref_text": "<b>🔗 Ваша реферальная ссылка</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>"
+        "ref_text": "<b>🔗 Ваша реферальная ссылка</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>",
+        "dashboard_text": (
+            "👤 <b>Панель пользователя</b>\n\n"
+            "💰 <b>Доступный баланс:</b> <code>{balance:.4f} SOL</code>\n"
+            "🌾 <b>Собственный фарминг:</b> <code>{self_farming:.4f} SOL</code>\n"
+            "🌾 <b>Бонус фарминга:</b> <code>{self_bonus:.4f} SOL</code>\n"
+            "👥 <b>Бонус прямых рефералов:</b> <code>{direct_ref:.4f} SOL</code>\n"
+            "🤝 <b>Командный реферальный бонус:</b> <code>{team_ref:.4f} SOL</code>\n"
+            "🤝 <b>Бонус оверрайда команды:</b> <code>{team_override:.4f} SOL</code>\n"
+            "🏆 <b>Бонус ранга и роялти:</b> <code>{royalty:.4f} SOL</code>\n"
+            "📈 <b>Всего заработано:</b> <code>{earned:.4f} SOL</code> (Макс. лимит: <code>{max_cap:.2f} SOL</code>)\n\n"
+            "🧁 <b>Всего выводов:</b> <code>{withdrawn:.4f} SOL</code>\n"
+            "🎯 <b>Доступный лимит вывода:</b> <code>{available_limit:.4f} SOL</code>\n\n"
+            "📦 <b>Активный план:</b> {active_plan}\n"
+            "🏆 <b>Текущий ранг:</b> {current_rank}"
+        ),
+        "ranks_text": (
+            "🏆 <b>Статус рангов и роялти</b>\n\n"
+            "<b>• Всего прямых:</b> <code>{directs_count}</code> (Активных: <code>{active_directs}</code>)\n"
+            "<b>• Прямой оборот:</b> <code>{direct_biz:.2f} SOL</code>\n"
+            "<b>• Общий оборот команды:</b> <code>{team_biz:.2f} SOL</code>\n"
+            "<b>• Текущий ранг:</b> <code>{current_rank_name}</code>\n"
+            "<b>• Следующий ранг:</b> <code>{next_rank_name}</code>\n\n"
+            "<b>🎯 Прогресс до следующего ранга:</b>\n"
+            "<b>• Общая цель ({target} SOL):</b> {total_icon} (Текущий: {total_volume:.2f})\n\n"
+            "<b>• Проверка веток:</b>\n"
+            "<b> - Сильнейшая ветка (мин. {req_strongest} SOL):</b> {strongest_icon} (Текущий: <code>{highest_leg:.2f}</code>)\n"
+            "<b> - Остальные ветки (мин. {req_other} SOL):</b> {other_icon} (Текущий: <code>{other_legs_total:.2f}</code>)\n"
+        )
     },
     "zh": {
         "select_lang": "🌐 请选择您的语言：",
         "lang_changed": "✅ 语言已更新为中文！",
         "welcome": "🚜 <b>欢迎来到 {PROJECT_NAME}</b>\n\n使用下方的按钮开始您的耕作之旅。",
+        "btn_plans": "💎 挖矿套餐",
+        "btn_deposit": "💰 存款 SOL",
+        "btn_dashboard": "📊 面板",
+        "btn_withdraw": "🎁 提现",
+        "btn_ref": "🔗 推荐链接",
+        "btn_team": "👥 团队成员",
+        "btn_ranks": "🏆 等级与版税",
+        "btn_history": "📜 提现记录",
+        "btn_lang": "🌐 更改语言",
         "farming_packages": (
             "<b>💎 挖矿套餐（个人上限 250%，团队上限 500%）：</b>\n\n"
             "1️⃣ <b>STARTER</b>\n• 限制：0.10 - 2.0 SOL\n• 每日奖励：0.5%\n\n"
@@ -198,12 +281,49 @@ translations = {
         "min_withdraw": "❌ <b>最低提现额度为</b> <code>0.01 SOL</code>。",
         "withdraw_prompt": "💰 <b>可用余额：</b> <code>{bal:.4f} SOL</code>\n\n请输入金额：",
         "team_empty": "👥 您还没有团队成员。",
-        "ref_text": "<b>🔗 您的推荐链接</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>"
+        "ref_text": "<b>🔗 您的推荐链接</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>",
+        "dashboard_text": (
+            "👤 <b>用户面板</b>\n\n"
+            "💰 <b>可用余额：</b> <code>{balance:.4f} SOL</code>\n"
+            "🌾 <b>总个人耕作：</b> <code>{self_farming:.4f} SOL</code>\n"
+            "🌾 <b>个人耕作奖励：</b> <code>{self_bonus:.4f} SOL</code>\n"
+            "👥 <b>直接推荐奖励：</b> <code>{direct_ref:.4f} SOL</code>\n"
+            "🤝 <b>团队推荐奖励：</b> <code>{team_ref:.4f} SOL</code>\n"
+            "🤝 <b>团队耕作覆盖奖励：</b> <code>{team_override:.4f} SOL</code>\n"
+            "🏆 <b>等级与版税奖励：</b> <code>{royalty:.4f} SOL</code>\n"
+            "📈 <b>总收益：</b> <code>{earned:.4f} SOL</code> (上限: <code>{max_cap:.2f} SOL</code>)\n\n"
+            "🧁 <b>总提现：</b> <code>{withdrawn:.4f} SOL</code>\n"
+            "🎯 <b>可用提现额度：</b> <code>{available_limit:.4f} SOL</code>\n\n"
+            "📦 <b>当前套餐：</b> {active_plan}\n"
+            "🏆 <b>当前等级：</b> {current_rank}"
+        ),
+        "ranks_text": (
+            "🏆 <b>等级与版税状态</b>\n\n"
+            "<b>• 直接推荐总数：</b> <code>{directs_count}</code> (活跃：<code>{active_directs}</code>)\n"
+            "<b>• 直接业绩：</b> <code>{direct_biz:.2f} SOL</code>\n"
+            "<b>• 团队总业绩：</b> <code>{team_biz:.2f} SOL</code>\n"
+            "<b>• 当前等级：</b> <code>{current_rank_name}</code>\n"
+            "<b>• 下一等级：</b> <code>{next_rank_name}</code>\n\n"
+            "<b>🎯 下一等级进度：</b>\n"
+            "<b>• 总目标 ({target} SOL)：</b> {total_icon} (当前：{total_volume:.2f})\n\n"
+            "<b>• 腿部要求检查：</b>\n"
+            "<b> - 最强腿 (最小 {req_strongest} SOL)：</b> {strongest_icon} (当前：<code>{highest_leg:.2f}</code>)\n"
+            "<b> - 其他腿组合 (最小 {req_other} SOL)：</b> {other_icon} (当前：<code>{other_legs_total:.2f}</code>)\n"
+        )
     },
     "vi": {
         "select_lang": "🌐 Vui lòng chọn ngôn ngữ của bạn:",
         "lang_changed": "✅ Đã cập nhật ngôn ngữ thành Tiếng Việt!",
         "welcome": "🚜 <b>Chào mừng đến với {PROJECT_NAME}</b>\n\nSử dụng các nút bên dưới để bắt đầu hành trình canh tác của bạn.",
+        "btn_plans": "💎 Gói Khai Thác",
+        "btn_deposit": "💰 Nạp SOL",
+        "btn_dashboard": "📊 Bảng điều khiển",
+        "btn_withdraw": "🎁 Rút tiền",
+        "btn_ref": "🔗 Liên kết giới thiệu",
+        "btn_team": "👥 Thành viên nhóm",
+        "btn_ranks": "🏆 Cấp bậc & Bản quyền",
+        "btn_history": "📜 Lịch sử rút tiền",
+        "btn_lang": "🌐 Đổi ngôn ngữ",
         "farming_packages": (
             "<b>💎 Gói Khai Thác (Giới hạn tối đa: 250% cá nhân, 500% với đội ngũ):</b>\n\n"
             "1️⃣ <b>STARTER</b>\n• Giới hạn: 0.10 - 2.0 SOL\n• Thưởng: 0.5% Mỗi ngày\n\n"
@@ -218,12 +338,49 @@ translations = {
         "min_withdraw": "❌ <b>Hạn mức rút tối thiểu là</b> <code>0.01 SOL</code>.",
         "withdraw_prompt": "💰 <b>Số dư khả dụng:</b> <code>{bal:.4f} SOL</code>\n\nNhập số tiền:",
         "team_empty": "👥 Bạn chưa có thành viên nhóm nào.",
-        "ref_text": "<b>🔗 Liên kết giới thiệu của bạn</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>"
+        "ref_text": "<b>🔗 Liên kết giới thiệu của bạn</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>",
+        "dashboard_text": (
+            "👤 <b>Bảng điều khiển</b>\n\n"
+            "💰 <b>Số dư khả dụng:</b> <code>{balance:.4f} SOL</code>\n"
+            "🌾 <b>Tổng tự canh tác:</b> <code>{self_farming:.4f} SOL</code>\n"
+            "🌾 <b>Thưởng tự canh tác:</b> <code>{self_bonus:.4f} SOL</code>\n"
+            "👥 <b>Thưởng giới thiệu trực tiếp:</b> <code>{direct_ref:.4f} SOL</code>\n"
+            "🤝 <b>Thưởng giới thiệu nhóm:</b> <code>{team_ref:.4f} SOL</code>\n"
+            "🤝 <b>Thưởng ghi đè nhóm:</b> <code>{team_override:.4f} SOL</code>\n"
+            "🏆 <b>Thưởng cấp bậc & bản quyền:</b> <code>{royalty:.4f} SOL</code>\n"
+            "📈 <b>Tổng thu nhập:</b> <code>{earned:.4f} SOL</code> (Giới hạn: <code>{max_cap:.2f} SOL</code>)\n\n"
+            "🧁 <b>Tổng rút tiền:</b> <code>{withdrawn:.4f} SOL</code>\n"
+            "🎯 <b>Hạn mức rút khả dụng:</b> <code>{available_limit:.4f} SOL</code>\n\n"
+            "📦 <b>Gói hiện tại:</b> {active_plan}\n"
+            "🏆 <b>Cấp bậc hiện tại:</b> {current_rank}"
+        ),
+        "ranks_text": (
+            "🏆 <b>Trạng thái cấp bậc & bản quyền</b>\n\n"
+            "<b>• Tổng trực tiếp:</b> <code>{directs_count}</code> (Hoạt động: <code>{active_directs}</code>)\n"
+            "<b>• Doanh số trực tiếp:</b> <code>{direct_biz:.2f} SOL</code>\n"
+            "<b>• Tổng doanh số nhóm:</b> <code>{team_biz:.2f} SOL</code>\n"
+            "<b>• Cấp bậc hiện tại:</b> <code>{current_rank_name}</code>\n"
+            "<b>• Cấp bậc tiếp theo:</b> <code>{next_rank_name}</code>\n\n"
+            "<b>🎯 Tiến độ cấp tiếp theo:</b>\n"
+            "<b>• Mục tiêu tổng ({target} SOL):</b> {total_icon} (Hiện tại: {total_volume:.2f})\n\n"
+            "<b>• Kiểm tra chân:</b>\n"
+            "<b> - Chân mạnh nhất (Tối thiểu {req_strongest} SOL):</b> {strongest_icon} (Hiện tại: <code>{highest_leg:.2f}</code>)\n"
+            "<b> - Các chân khác (Tối thiểu {req_other} SOL):</b> {other_icon} (Hiện tại: <code>{other_legs_total:.2f}</code>)\n"
+        )
     },
     "id": {
         "select_lang": "🌐 Silakan pilih bahasa Anda:",
         "lang_changed": "✅ Bahasa berhasil diubah ke Bahasa Indonesia!",
         "welcome": "🚜 <b>Selamat datang di {PROJECT_NAME}</b>\n\nGunakan tombol di bawah untuk memulai perjalanan farming Anda.",
+        "btn_plans": "💎 Paket Farming",
+        "btn_deposit": "💰 Deposit SOL",
+        "btn_dashboard": "📊 Dasbor",
+        "btn_withdraw": "🎁 Penarikan",
+        "btn_ref": "🔗 Tautan Referensi",
+        "btn_team": "👥 Anggota Tim",
+        "btn_ranks": "🏆 Peringkat & Royalti",
+        "btn_history": "📜 Riwayat Penarikan",
+        "btn_lang": "🌐 Ubah Bahasa",
         "farming_packages": (
             "<b>💎 Paket Farming (Batas Maks: 250% Mandiri, 500% dengan Tim):</b>\n\n"
             "1️⃣ <b>STARTER</b>\n• Batas: 0.10 - 2.0 SOL\n• Hadiah: 0.5% per Hari\n\n"
@@ -238,12 +395,49 @@ translations = {
         "min_withdraw": "❌ <b>Batas penarikan minimum adalah</b> <code>0.01 SOL</code>.",
         "withdraw_prompt": "💰 <b>Saldo Tersedia:</b> <code>{bal:.4f} SOL</code>\n\nMasukkan jumlah:",
         "team_empty": "👥 Anda belum memiliki anggota tim.",
-        "ref_text": "<b>🔗 Tautan Referensi Anda</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>"
+        "ref_text": "<b>🔗 Tautan Referensi Anda</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>",
+        "dashboard_text": (
+            "👤 <b>Dasbor Pengguna</b>\n\n"
+            "💰 <b>Saldo Tersedia:</b> <code>{balance:.4f} SOL</code>\n"
+            "🌾 <b>Total Self Farming:</b> <code>{self_farming:.4f} SOL</code>\n"
+            "🌾 <b>Bonus Self Farming:</b> <code>{self_bonus:.4f} SOL</code>\n"
+            "👥 <b>Bonus Referral Langsung:</b> <code>{direct_ref:.4f} SOL</code>\n"
+            "🤝 <b>Bonus Referral Tim:</b> <code>{team_ref:.4f} SOL</code>\n"
+            "🤝 <b>Bonus Override Tim:</b> <code>{team_override:.4f} SOL</code>\n"
+            "🏆 <b>Bonus Peringkat & Royalti:</b> <code>{royalty:.4f} SOL</code>\n"
+            "📈 <b>Total Pendapatan:</b> <code>{earned:.4f} SOL</code> (Batas: <code>{max_cap:.2f} SOL</code>)\n\n"
+            "🧁 <b>Total Penarikan:</b> <code>{withdrawn:.4f} SOL</code>\n"
+            "🎯 <b>Batas Penarikan Tersedia:</b> <code>{available_limit:.4f} SOL</code>\n\n"
+            "📦 <b>Paket Aktif:</b> {active_plan}\n"
+            "🏆 <b>Peringkat Saat Ini:</b> {current_rank}"
+        ),
+        "ranks_text": (
+            "🏆 <b>Status Peringkat & Royalti</b>\n\n"
+            "<b>• Total Direct:</b> <code>{directs_count}</code> (Aktif: <code>{active_directs}</code>)\n"
+            "<b>• Bisnis Langsung:</b> <code>{direct_biz:.2f} SOL</code>\n"
+            "<b>• Total Bisnis Tim:</b> <code>{team_biz:.2f} SOL</code>\n"
+            "<b>• Peringkat Saat Ini:</b> <code>{current_rank_name}</code>\n"
+            "<b>• Peringkat Berikutnya:</b> <code>{next_rank_name}</code>\n\n"
+            "<b>🎯 Progres Peringkat Berikutnya:</b>\n"
+            "<b>• Target Total ({target} SOL):</b> {total_icon} (Saat Ini: {total_volume:.2f})\n\n"
+            "<b>• Pemeriksaan Kaki:</b>\n"
+            "<b> - Kaki Terkuat (Min {req_strongest} SOL):</b> {strongest_icon} (Saat Ini: <code>{highest_leg:.2f}</code>)\n"
+            "<b> - Kaki Lainnya (Min {req_other} SOL):</b> {other_icon} (Saat Ini: <code>{other_legs_total:.2f}</code>)\n"
+        )
     },
     "th": {
         "select_lang": "🌐 กรุณาเลือกภาษาของคุณ:",
         "lang_changed": "✅ เปลี่ยนภาษาเป็นภาษาไทยเรียบร้อยแล้ว!",
         "welcome": "🚜 <b>ยินดีต้อนรับสู่ {PROJECT_NAME}</b>\n\nใช้ปุ่มด้านล่างเพื่อเริ่มต้นการทำฟาร์มของคุณ",
+        "btn_plans": "💎 แพ็คเกจฟาร์ม",
+        "btn_deposit": "💰 ฝาก SOL",
+        "btn_dashboard": "📊 แดชบอร์ด",
+        "btn_withdraw": "🎁 ถอนเงิน",
+        "btn_ref": "🔗 ลิงก์แนะนำ",
+        "btn_team": "👥 สมาชิกในทีม",
+        "btn_ranks": "🏆 ตำแหน่ง & ค่าลิขสิทธิ์",
+        "btn_history": "📜 ประวัติการถอน",
+        "btn_lang": "🌐 เปลี่ยนภาษา",
         "farming_packages": (
             "<b>💎 แพ็คเกจฟาร์ม (ขีดจำกัดสูงสุด: 250% สำหรับส่วนตัว, 500% กับทีม):</b>\n\n"
             "1️⃣ <b>STARTER</b>\n• ขีดจำกัด: 0.10 - 2.0 SOL\n• รางวัล: 0.5% ต่อวัน\n\n"
@@ -258,12 +452,49 @@ translations = {
         "min_withdraw": "❌ <b>ขีดจำกัดการถอนขั้นต่ำคือ</b> <code>0.01 SOL</code>",
         "withdraw_prompt": "💰 <b>ยอดเงินคงเหลือ:</b> <code>{bal:.4f} SOL</code>\n\nป้อนจำนวนเงิน:",
         "team_empty": "👥 คุณยังไม่มีสมาชิกในทีม",
-        "ref_text": "<b>🔗 ลิงก์แนะนำของคุณ</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>"
+        "ref_text": "<b>🔗 ลิงก์แนะนำของคุณ</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>",
+        "dashboard_text": (
+            "👤 <b>แดชบอร์ดผู้ใช้</b>\n\n"
+            "💰 <b>ยอดเงินคงเหลือ:</b> <code>{balance:.4f} SOL</code>\n"
+            "🌾 <b>การทำฟาร์มส่วนตัวทั้งหมด:</b> <code>{self_farming:.4f} SOL</code>\n"
+            "🌾 <b>โบนัสการทำฟาร์ม:</b> <code>{self_bonus:.4f} SOL</code>\n"
+            "👥 <b>โบนัสแนะนำโดยตรง:</b> <code>{direct_ref:.4f} SOL</code>\n"
+            "🤝 <b>โบนัสแนะนำทีม:</b> <code>{team_ref:.4f} SOL</code>\n"
+            "🤝 <b>โบนัสโอเวอร์ライドทีม:</b> <code>{team_override:.4f} SOL</code>\n"
+            "🏆 <b>โบนัสตำแหน่ง & ค่าลิขสิทธิ์:</b> <code>{royalty:.4f} SOL</code>\n"
+            "📈 <b>รายได้รวม:</b> <code>{earned:.4f} SOL</code> (ขีดจำกัด: <code>{max_cap:.2f} SOL</code>)\n\n"
+            "🧁 <b>การถอนเงินทั้งหมด:</b> <code>{withdrawn:.4f} SOL</code>\n"
+            "🎯 <b>ขีดจำกัดการถอนที่ใช้ได้:</b> <code>{available_limit:.4f} SOL</code>\n\n"
+            "📦 <b>แพ็คเกจที่ใช้งาน:</b> {active_plan}\n"
+            "🏆 <b>ตำแหน่งปัจจุบัน:</b> {current_rank}"
+        ),
+        "ranks_text": (
+            "🏆 <b>สถานะตำแหน่ง & ค่าลิขสิทธิ์</b>\n\n"
+            "<b>• แนะนำตรงทั้งหมด:</b> <code>{directs_count}</code> (ใช้งาน: <code>{active_directs}</code>)\n"
+            "<b>• ยอดธุรกิจตรง:</b> <code>{direct_biz:.2f} SOL</code>\n"
+            "<b>• ยอดธุรกิจทีมรวม:</b> <code>{team_biz:.2f} SOL</code>\n"
+            "<b>• ตำแหน่งปัจจุบัน:</b> <code>{current_rank_name}</code>\n"
+            "<b>• ตำแหน่งถัดไป:</b> <code>{next_rank_name}</code>\n\n"
+            "<b>🎯 ความคืบหน้าสำหรับตำแหน่งถัดไป:</b>\n"
+            "<b>• เป้าหมายรวม ({target} SOL):</b> {total_icon} (ปัจจุบัน: {total_volume:.2f})\n\n"
+            "<b>• ตรวจสอบขา:</b>\n"
+            "<b> - ขาที่แข็งแกร่งที่สุด (ขั้นต่ำ {req_strongest} SOL):</b> {strongest_icon} (ปัจจุบัน: <code>{highest_leg:.2f}</code>)\n"
+            "<b> - ขาอื่นๆ รวมกัน (ขั้นต่ำ {req_other} SOL):</b> {other_icon} (ปัจจุบัน: <code>{other_legs_total:.2f}</code>)\n"
+        )
     },
     "ar": {
         "select_lang": "🌐 الرجاء اختيار لغتك:",
         "lang_changed": "✅ تم تحديث اللغة إلى العربية!",
         "welcome": "🚜 <b>مرحباً بك في {PROJECT_NAME}</b>\n\nاستخدم الأزرار أدناه لبدء رحلة الزراعة الخاصة بك.",
+        "btn_plans": "💎 باقات الزراعة",
+        "btn_deposit": "💰 إيداع SOL",
+        "btn_dashboard": "📊 لوحة التحكم",
+        "btn_withdraw": "🎁 سحب",
+        "btn_ref": "🔗 رابط الإحالة",
+        "btn_team": "👥 أعضاء الفريق",
+        "btn_ranks": "🏆 الرتب والعائدات",
+        "btn_history": "📜 سجل السحب",
+        "btn_lang": "🌐 تغير اللغة",
         "farming_packages": (
             "<b>💎 باقات الزراعة (الحد الأقصى: 250% للشخصي، 500% مع الفريق):</b>\n\n"
             "1️⃣ <b>STARTER</b>\n• الحد: 0.10 - 2.0 SOL\n• المكافأة: 0.5% يومياً\n\n"
@@ -278,12 +509,49 @@ translations = {
         "min_withdraw": "❌ <b>الحد الأدنى للسحب هو</b> <code>0.01 SOL</code>.",
         "withdraw_prompt": "💰 <b>الرصيد المتاح:</b> <code>{bal:.4f} SOL</code>\n\nأدخل المبلغ:",
         "team_empty": "👥 ليس لديك أي أعضاء في الفريق حتى الآن.",
-        "ref_text": "<b>🔗 رابط الإحالة الخاص بك</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>"
+        "ref_text": "<b>🔗 رابط الإحالة الخاص بك</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>",
+        "dashboard_text": (
+            "👤 <b>لوحة تحكم المستخدم</b>\n\n"
+            "💰 <b>الرصيد المتاح:</b> <code>{balance:.4f} SOL</code>\n"
+            "🌾 <b>إجمالي الزراعة الذاتية:</b> <code>{self_farming:.4f} SOL</code>\n"
+            "🌾 <b>مكافأة الزراعة الذاتية:</b> <code>{self_bonus:.4f} SOL</code>\n"
+            "👥 <b>مكافأة الإحالة المباشرة:</b> <code>{direct_ref:.4f} SOL</code>\n"
+            "🤝 <b>مكافأة إحالة الفريق:</b> <code>{team_ref:.4f} SOL</code>\n"
+            "🤝 <b>مكافأة تجاوز زراعة الفريق:</b> <code>{team_override:.4f} SOL</code>\n"
+            "🏆 <b>مكافأة الرتبة والعائدات:</b> <code>{royalty:.4f} SOL</code>\n"
+            "📈 <b>إجمالي الأرباح:</b> <code>{earned:.4f} SOL</code> (الحد الأقصى: <code>{max_cap:.2f} SOL</code>)\n\n"
+            "🧁 <b>إجمالي السحب:</b> <code>{withdrawn:.4f} SOL</code>\n"
+            "🎯 <b>حد السحب المتاح:</b> <code>{available_limit:.4f} SOL</code>\n\n"
+            "📦 <b>الباقة النشطة:</b> {active_plan}\n"
+            "🏆 <b>الرتبة الحالية:</b> {current_rank}"
+        ),
+        "ranks_text": (
+            "🏆 <b>حالة الرتب والعائدات</b>\n\n"
+            "<b>• إجمالي الإحالات المباشرة:</b> <code>{directs_count}</code> (النشطة: <code>{active_directs}</code>)\n"
+            "<b>• أعمال الإحالات المباشرة:</b> <code>{direct_biz:.2f} SOL</code>\n"
+            "<b>• إجمالي أعمال الفريق:</b> <code>{team_biz:.2f} SOL</code>\n"
+            "<b>• الرتبة الحالية:</b> <code>{current_rank_name}</code>\n"
+            "<b>• الرتبة التالية:</b> <code>{next_rank_name}</code>\n\n"
+            "<b>🎯 تقدم الرتبة التالية:</b>\n"
+            "<b>• الهدف الإجمالي ({target} SOL):</b> {total_icon} (الحالي: {total_volume:.2f})\n\n"
+            "<b>• فحص متطلبات الأرجل:</b>\n"
+            "<b> - الرجل الأقوى (الحد الأدنى {req_strongest} SOL):</b> {strongest_icon} (الحالي: <code>{highest_leg:.2f}</code>)\n"
+            "<b> - الأرجل الأخرى مجتمعة (الحد الأدنى {req_other} SOL):</b> {other_icon} (الحالي: <code>{other_legs_total:.2f}</code>)\n"
+        )
     },
     "hi": {
         "select_lang": "🌐 कृपया अपनी भाषा चुनें:",
         "lang_changed": "✅ भाषा बदलकर हिंदी कर दी गई है!",
         "welcome": "🚜 <b>{PROJECT_NAME} में आपका स्वागत है</b>\n\nअपनी फार्मिंग यात्रा शुरू करने के लिए नीचे दिए गए बटनों का उपयोग करें।",
+        "btn_plans": "💎 फार्मिंग प्लान्स",
+        "btn_deposit": "💰 SOL जमा करें",
+        "btn_dashboard": "📊 डैशबोर्ड",
+        "btn_withdraw": "🎁 निकासी",
+        "btn_ref": "🔗 रेफरल लिंक",
+        "btn_team": "👥 टीम मेंबर",
+        "btn_ranks": "🏆 रैंक और रॉयल्टी",
+        "btn_history": "📜 निकासी इतिहास",
+        "btn_lang": "🌐 भाषा बदलें",
         "farming_packages": (
             "<b>💎 फार्मing पैकेज (अधिकतम कैप: स्वयं के लिए 250%, टीम के साथ 500%):</b>\n\n"
             "1️⃣ <b>STARTER</b>\n• सीमा: 0.10 - 2.0 SOL\n• इनाम: 0.5% प्रतिदिन\n\n"
@@ -293,17 +561,54 @@ translations = {
             "⚠️ <i>नोट: बेस कैप 250% है। कम से कम एक सक्रिय उपयोगकर्ता को रेफर करने पर कैप 500% हो जाता है।</i>"
         ),
         "deposit_prompt": "💰 <b>SOL जमा करें</b>\n\nकृपया SOL जमा करने के लिए ऊपर दिए गए QR कोड को स्कैन करें या नीचे दिए गए पते को कॉपी करें:\n\n<code>{wallet_address}</code>\n\n⚠ <i>इस पते पर केवल SOL भेजें।</i>\n\n📝 <i>भेजने के बाद, अपनी आईडी सक्रिय करने के लिए यहाँ Transaction Hash (TxID) भेजें!</i>",
-        "no_history": "📜 <b>निकासी इतिहास</b>\n\nआपका कोई पिछلا निकासी रिकॉर्ड नहीं है।",
+        "no_history": "📜 <b>निकासी इतिहास</b>\n\nआपका कोई पिछला निकासी रिकॉर्ड नहीं है।",
         "history_title": "📜 <b>आपकी हालिया निकासी:</b>\n\n",
         "min_withdraw": "❌ <b>न्यूनतम निकासी सीमा</b> <code>0.01 SOL</code> <b>है।</b>",
         "withdraw_prompt": "💰 <b>उपलब्ध शेष राशि:</b> <code>{bal:.4f} SOL</code>\n\nराशि दर्ज करें:",
         "team_empty": "👥 आपका अभी तक कोई टीम मेंबर नहीं है।",
-        "ref_text": "<b>🔗 आपका रेफरल लिंक</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>"
+        "ref_text": "<b>🔗 आपका रेफरल लिंक</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>",
+        "dashboard_text": (
+            "👤 <b>यूज़र डैशबोर्ड</b>\n\n"
+            "💰 <b>उपलब्ध शेष राशि:</b> <code>{balance:.4f} SOL</code>\n"
+            "🌾 <b>कुल स्वयं की फार्मिंग:</b> <code>{self_farming:.4f} SOL</code>\n"
+            "🌾 <b>फार्मिंग बोनस:</b> <code>{self_bonus:.4f} SOL</code>\n"
+            "👥 <b>प्रत्यक्ष रेफरल बोनस:</b> <code>{direct_ref:.4f} SOL</code>\n"
+            "🤝 <b>टीम रेफरल बोनस:</b> <code>{team_ref:.4f} SOL</code>\n"
+            "🤝 <b>टीम फार्मिंग ओवरराइड बोनस:</b> <code>{team_override:.4f} SOL</code>\n"
+            "🏆 <b>रैंक और रॉयल्टी बोनस:</b> <code>{royalty:.4f} SOL</code>\n"
+            "📈 <b>कुल कमाई:</b> <code>{earned:.4f} SOL</code> (अधिकतम कैप: <code>{max_cap:.2f} SOL</code>)\n\n"
+            "🧁 <b>कुल निकासी:</b> <code>{withdrawn:.4f} SOL</code>\n"
+            "🎯 <b>उपलब्ध निकासी सीमा:</b> <code>{available_limit:.4f} SOL</code>\n\n"
+            "📦 <b>सक्रिय प्लान:</b> {active_plan}\n"
+            "🏆 <b>वर्तमान रैंक:</b> {current_rank}"
+        ),
+        "ranks_text": (
+            "🏆 <b>रैंक और रॉयल्टी स्थिति</b>\n\n"
+            "<b>• कुल डायरेक्ट्स:</b> <code>{directs_count}</code> (सक्रिय: <code>{active_directs}</code>)\n"
+            "<b>• डायरेक्ट बिजनेस:</b> <code>{direct_biz:.2f} SOL</code>\n"
+            "<b>• कुल टीम बिजनेस:</b> <code>{team_biz:.2f} SOL</code>\n"
+            "<b>• वर्तमान रैंक:</b> <code>{current_rank_name}</code>\n"
+            "<b>• अगली रैंक:</b> <code>{next_rank_name}</code>\n\n"
+            "<b>🎯 अगली रैंक के लिए प्रगति:</b>\n"
+            "<b>• कुल लक्ष्य ({target} SOL):</b> {total_icon} (वर्तमान: {total_volume:.2f})\n\n"
+            "<b>• लेग आवश्यकता चेक:</b>\n"
+            "<b> - मजबूत लेग (न्यूनतम {req_strongest} SOL):</b> {strongest_icon} (वर्तमान: <code>{highest_leg:.2f}</code>)\n"
+            "<b> - अन्य लेग्स संयुक्त (न्यूनतम {req_other} SOL):</b> {other_icon} (वर्तमान: <code>{other_legs_total:.2f}</code>)\n"
+        )
     },
     "bn": {
         "select_lang": "🌐 অনুগ্রহ করে আপনার ভাষা নির্বাচন করুন:",
         "lang_changed": "✅ ভাষা সফলভাবে বাংলায় আপডেট করা হয়েছে!",
         "welcome": "🚜 <b>{PROJECT_NAME}-এ আপনাকে স্বাগতম</b>\n\nআপনার ফার্মিং যাত্রা শুরু করতে নিচের বোতামগুলি ব্যবহার করুন।",
+        "btn_plans": "💎 ফার্মিং প্ল্যান",
+        "btn_deposit": "💰 SOL জমা দিন",
+        "btn_dashboard": "📊 ড্যাশবোর্ড",
+        "btn_withdraw": "🎁 উত্তোলন",
+        "btn_ref": "🔗 রেফারেল লিংক",
+        "btn_team": "👥 টিম মেম্বার",
+        "btn_ranks": "🏆 র্যাঙ্ক এবং রয়্যালটি",
+        "btn_history": "📜 উত্তোলনের ইতিহাস",
+        "btn_lang": "🌐 ভাষা পরিবর্তন",
         "farming_packages": (
             "<b>💎 ফার্মিং প্যাকেজ (সর্বোচ্চ ক্যাপ: নিজের জন্য ২৫০%, টিমের সাথে ৫০০%):</b>\n\n"
             "1️⃣ <b>STARTER</b>\n• সীমা: 0.10 - 2.0 SOL\n• পুরস্কার: প্রতিদিন 0.5%\n\n"
@@ -318,12 +623,49 @@ translations = {
         "min_withdraw": "❌ <b>সর্বনিম্ন উত্তোলনের সীমা হলো</b> <code>0.01 SOL</code>।",
         "withdraw_prompt": "💰 <b>উপলব্ধ ব্যালেন্স:</b> <code>{bal:.4f} SOL</code>\n\nপরিমাণ লিখুন:",
         "team_empty": "👥 আপনার এখনও কোনো টিম মেম্বার নেই।",
-        "ref_text": "<b>🔗 আপনার রেফারেল লিংক</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>"
+        "ref_text": "<b>🔗 আপনার রেফারেল লিংক</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>",
+        "dashboard_text": (
+            "👤 <b>ব্যবহারকারী ড্যাশবোর্ড</b>\n\n"
+            "💰 <b>উপলব্ধ ব্যালেন্স:</b> <code>{balance:.4f} SOL</code>\n"
+            "🌾 <b>মোট সেলফ ফার্মিং:</b> <code>{self_farming:.4f} SOL</code>\n"
+            "🌾 <b>সেলফ ফার্মিং বোনাস:</b> <code>{self_bonus:.4f} SOL</code>\n"
+            "👥 <b>ডাইরেক্ট রেফারেল বোনাস:</b> <code>{direct_ref:.4f} SOL</code>\n"
+            "🤝 <b>টিম রেফারেল বোনাস:</b> <code>{team_ref:.4f} SOL</code>\n"
+            "🤝 <b>টিম ফার্মিং ওভাররাইড বোনাস:</b> <code>{team_override:.4f} SOL</code>\n"
+            "🏆 <b>র্যাঙ্ক এবং রয়্যালটি বোনাস:</b> <code>{royalty:.4f} SOL</code>\n"
+            "📈 <b>মোট অর্জিত:</b> <code>{earned:.4f} SOL</code> (সর্বোচ্চ ক্যাপ: <code>{max_cap:.2f} SOL</code>)\n\n"
+            "🧁 <b>মোট উত্তোলন:</b> <code>{withdrawn:.4f} SOL</code>\n"
+            "🎯 <b>উপলব্ধ উত্তোলনের সীমা:</b> <code>{available_limit:.4f} SOL</code>\n\n"
+            "📦 <b>সক্রিয় প্ল্যান:</b> {active_plan}\n"
+            "🏆 <b>বর্তমান র্যাঙ্ক:</b> {current_rank}"
+        ),
+        "ranks_text": (
+            "🏆 <b>র্যাঙ্ক এবং রয়্যালটি স্থিতি</b>\n\n"
+            "<b>• মোট ডাইরেক্ট:</b> <code>{directs_count}</code> (সক্রিয়: <code>{active_directs}</code>)\n"
+            "<b>• ডাইরেক্ট বিজনেস:</b> <code>{direct_biz:.2f} SOL</code>\n"
+            "<b>• মোট টিম বিজনেস:</b> <code>{team_biz:.2f} SOL</code>\n"
+            "<b>• বর্তমান র্যাঙ্ক:</b> <code>{current_rank_name}</code>\n"
+            "<b>• পরবর্তী র্যাঙ্ক:</b> <code>{next_rank_name}</code>\n\n"
+            "<b>🎯 পরবর্তী র্যাঙ্কের অগ্রগতি:</b>\n"
+            "<b>• মোট লক্ষ্য ({target} SOL):</b> {total_icon} (বর্তমান: {total_volume:.2f})\n\n"
+            "<b>• লেগ প্রয়োজনীয়তা চেক:</b>\n"
+            "<b> - শক্তিশালী লেগ (ন্যূনতম {req_strongest} SOL):</b> {strongest_icon} (বর্তমান: <code>{highest_leg:.2f}</code>)\n"
+            "<b> - অন্যান্য লেগ সংযুক্ত (ন্যূনতম {req_other} SOL):</b> {other_icon} (বর্তমান: <code>{other_legs_total:.2f}</code>)\n"
+        )
     },
     "ng": {
         "select_lang": "🌐 Abeg select your language:",
         "lang_changed": "✅ Language don change to Naija Pidgin!",
         "welcome": "🚜 <b>Welcome to {PROJECT_NAME}</b>\n\nUse the buttons below to start your farming journey.",
+        "btn_plans": "💎 Farming Plans",
+        "btn_deposit": "💰 Deposit SOL",
+        "btn_dashboard": "📊 Dashboard",
+        "btn_withdraw": "🎁 Withdraw",
+        "btn_ref": "🔗 Referral Link",
+        "btn_team": "👥 Team Members",
+        "btn_ranks": "🏆 Ranks & Royalty",
+        "btn_history": "📜 Withdrawal History",
+        "btn_lang": "🌐 Change Language",
         "farming_packages": (
             "<b>💎 Farming Packages (Max Cap: 250% for Self, 500% with Team):</b>\n\n"
             "1️⃣ <b>STARTER</b>\n• Limit: 0.10 - 2.0 SOL\n• Reward: 0.5% Daily\n\n"
@@ -338,7 +680,35 @@ translations = {
         "min_withdraw": "❌ <b>Minimum withdrawal limit na</b> <code>0.01 SOL</code>.",
         "withdraw_prompt": "💰 <b>Available Balance:</b> <code>{bal:.4f} SOL</code>\n\nEnter amount:",
         "team_empty": "👥 You no get any team members yet.",
-        "ref_text": "<b>🔗 Your Referral Link</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>"
+        "ref_text": "<b>🔗 Your Referral Link</b>\n\n<code>https://t.me/{bot_username}?start={user_id}</code>",
+        "dashboard_text": (
+            "👤 <b>User Dashboard</b>\n\n"
+            "💰 <b>Available Balance:</b> <code>{balance:.4f} SOL</code>\n"
+            "🌾 <b>Total Self Farming:</b> <code>{self_farming:.4f} SOL</code>\n"
+            "🌾 <b>Self Farming Bonus:</b> <code>{self_bonus:.4f} SOL</code>\n"
+            "👥 <b>Direct Referral Bonus:</b> <code>{direct_ref:.4f} SOL</code>\n"
+            "🤝 <b>Team Referral Bonus:</b> <code>{team_ref:.4f} SOL</code>\n"
+            "🤝 <b>Team Farming Override Bonus:</b> <code>{team_override:.4f} SOL</code>\n"
+            "🏆 <b>Rank & Royalty Bonus:</b> <code>{royalty:.4f} SOL</code>\n"
+            "📈 <b>Total Earned:</b> <code>{earned:.4f} SOL</code> (Max Cap: <code>{max_cap:.2f} SOL</code>)\n\n"
+            "🧁 <b>Total Withdrawals:</b> <code>{withdrawn:.4f} SOL</code>\n"
+            "🎯 <b>Available Withdrawal Limit:</b> <code>{available_limit:.4f} SOL</code>\n\n"
+            "📦 <b>Active Plan:</b> {active_plan}\n"
+            "🏆 <b>Current Rank:</b> {current_rank}"
+        ),
+        "ranks_text": (
+            "🏆 <b>Ranks & Royalty Status</b>\n\n"
+            "<b>• Total Directs:</b> <code>{directs_count}</code> (Active: <code>{active_directs}</code>)\n"
+            "<b>• Direct Business:</b> <code>{direct_biz:.2f} SOL</code>\n"
+            "<b>• Total Team Business:</b> <code>{team_biz:.2f} SOL</code>\n"
+            "<b>• Current Rank:</b> <code>{current_rank_name}</code>\n"
+            "<b>• Next Rank:</b> <code>{next_rank_name}</code>\n\n"
+            "<b>🎯 Progress for Next Rank:</b>\n"
+            "<b>• Total Target ({target} SOL):</b> {total_icon} (Current: {total_volume:.2f})\n\n"
+            "<b>• Leg Requirements Check:</b>\n"
+            "<b> - Strongest Leg (Min {req_strongest} SOL):</b> {strongest_icon} (Current: <code>{highest_leg:.2f}</code>)\n"
+            "<b> - Other Legs Combined (Min {req_other} SOL):</b> {other_icon} (Current: <code>{other_legs_total:.2f}</code>)\n"
+        )
     }
 }
 
@@ -351,6 +721,16 @@ def get_user_language(user_id):
     if row and row[0]:
         return row[0]
     return "en"
+
+def get_main_keyboard(lang):
+    t = translations.get(lang, translations["en"])
+    markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+    markup.add(t["btn_plans"], t["btn_deposit"])
+    markup.add(t["btn_dashboard"], t["btn_withdraw"])
+    markup.add(t["btn_ref"], t["btn_team"])
+    markup.add(t["btn_ranks"], t["btn_history"])
+    markup.add(t["btn_lang"])
+    return markup
 
 # --- SOLANA AUTO-VERIFY LOGIC ---
 def verify_solana_tx(tx_id):
@@ -500,19 +880,6 @@ def check_and_update_rank(user_id):
     if achieved_rank != old_rank and achieved_rank != "None":
         conn.execute("UPDATE users SET rank = ? WHERE user_id = ?", (achieved_rank, user_id))
         conn.commit()
-        try:
-            dir_biz = get_user_direct_business(conn, user_id)
-            congrats_text = (
-                "🎉 <b>CONGRATULATIONS!</b> 🎉\n\n"
-                "Fantastic news! You have successfully achieved a new rank upgrade!\n\n"
-                f"🏆 <b>New Rank:</b> <code>{achieved_rank}</code>\n\n"
-                f"• Direct Business: <b>{dir_biz:.2f} SOL</b>\n"
-                f"• Team Business: <b>{total_team_bus:.2f} SOL</b>\n\n"
-                "Keep up the amazing work and continue growing your team and earnings! 🚀"
-            )
-            bot.send_message(user_id, congrats_text, parse_mode="HTML")
-        except Exception as e:
-            print(f"Failed to send rank congratulation to {user_id}: {e}")
     else:
         conn.execute("UPDATE users SET rank = ? WHERE user_id = ?", (achieved_rank, user_id))
         conn.commit()
@@ -545,18 +912,18 @@ def handle_language_selection(call):
     conn.commit()
     conn.close()
     
-    success_msg = translations.get(selected_lang, translations["en"])["lang_changed"]
+    t = translations.get(selected_lang, translations["en"])
+    success_msg = t["lang_changed"]
     bot.answer_callback_query(call.id, success_msg)
-    try:
-        bot.edit_message_text(
-            chat_id=call.message.chat.id,
-            message_id=call.message.message_id,
-            text=success_msg
-        )
-    except Exception:
-        bot.send_message(call.message.chat.id, success_msg)
+    
+    # Send confirmation message with updated keyboard
+    bot.send_message(
+        call.message.chat.id,
+        success_msg,
+        reply_markup=get_main_keyboard(selected_lang)
+    )
 
-@bot.message_handler(func=lambda message: message.text == "🌐 Change Language")
+@bot.message_handler(func=lambda message: message.text in [translations[l]["btn_lang"] for l in translations])
 def language_text_handler(message):
     user_id = message.from_user.id
     lang = get_user_language(user_id)
@@ -604,31 +971,24 @@ def start(message):
 
     user_id = message.from_user.id
     lang = get_user_language(user_id)
-    welcome_template = translations.get(lang, translations["en"]).get("welcome", "🚜 <b>Welcome to {PROJECT_NAME}</b>\n\nUse the buttons below to start your farming journey.")
+    welcome_template = translations.get(lang, translations["en"]).get("welcome", translations["en"]["welcome"])
     welcome_text = welcome_template.format(PROJECT_NAME=PROJECT_NAME)
-
-    markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    markup.add("💎 Farming Plans", "💰 Deposit SOL")
-    markup.add("📊 Dashboard", "🎁 Withdraw")
-    markup.add("🔗 Referral Link", "👥 Team Members")
-    markup.add("🏆 Ranks & Royalty", "📜 Withdrawal History")
-    markup.add("🌐 Change Language")
 
     bot.send_message(
         message.chat.id,
         welcome_text,
         parse_mode="HTML",
-        reply_markup=markup,
+        reply_markup=get_main_keyboard(lang),
     )
 
-@bot.message_handler(func=lambda m: m.text == "💎 Farming Plans")
+@bot.message_handler(func=lambda m: m.text in [translations[l]["btn_plans"] for l in translations])
 def farming_plans(message):
     user_id = message.from_user.id
     lang = get_user_language(user_id)
     text = translations.get(lang, translations.get("en", {})).get("farming_packages", translations["en"]["farming_packages"])
     bot.send_message(message.chat.id, text, parse_mode="HTML")
 
-@bot.message_handler(func=lambda m: m.text == "💰 Deposit SOL")
+@bot.message_handler(func=lambda m: m.text in [translations[l]["btn_deposit"] for l in translations])
 def deposit_sol(message):
     user_id = message.from_user.id
     lang = get_user_language(user_id)
@@ -690,9 +1050,10 @@ def process_deposit(message):
   conn.close()
 
 @bot.message_handler(commands=['dashboard'])
-@bot.message_handler(func=lambda m: m.text and "Dashboard" in m.text)
+@bot.message_handler(func=lambda m: m.text and any(translations[l]["btn_dashboard"] in m.text for l in translations))
 def dashboard_handler(message):
     user_id = message.from_user.id
+    lang = get_user_language(user_id)
     try:
         conn = get_db()
         conn.row_factory = sqlite3.Row
@@ -731,26 +1092,28 @@ def dashboard_handler(message):
     max_cap = self_farming * multiplier
     available_limit = max_cap - withdrawn
 
-    text = (
-        f"👤 <b>User Dashboard</b>\n\n"
-        f"💰 <b>Available Balance:</b> <code>{balance:.4f} SOL</code>\n"
-        f"🌾 <b>Total Self Farming:</b> <code>{self_farming:.4f} SOL</code>\n"
-        f"🌾 <b>Self Farming Bonus:</b> <code>{self_bonus:.4f} SOL</code>\n"
-        f"👥 <b>Direct Referral Bonus:</b> <code>{direct_ref:.4f} SOL</code>\n"
-        f"🤝 <b>Team Referral Bonus:</b> <code>{team_ref:.4f} SOL</code>\n"
-        f"🤝 <b>Team Farming Override Bonus:</b> <code>{team_override:.4f} SOL</code>\n"
-        f"🏆 <b>Rank & Royalty Bonus:</b> <code>{royalty:.4f} SOL</code>\n"
-        f"📈 <b>Total Earned:</b> <code>{earned:.4f} SOL</code> (Max Cap: <code>{max_cap:.2f} SOL</code>)\n\n"
-        f"🧁 <b>Total Withdrawals:</b> <code>{withdrawn:.4f} SOL</code>\n"
-        f"🎯 <b>Available Withdrawal Limit:</b> <code>{available_limit:.4f} SOL</code>\n\n"
-        f"📦 <b>Active Plan:</b> {active_plan}\n"
-        f"🏆 <b>Current Rank:</b> {current_rank}"
+    template = translations.get(lang, translations["en"]).get("dashboard_text", translations["en"]["dashboard_text"])
+    text = template.format(
+        balance=balance,
+        self_farming=self_farming,
+        self_bonus=self_bonus,
+        direct_ref=direct_ref,
+        team_ref=team_ref,
+        team_override=team_override,
+        royalty=royalty,
+        earned=earned,
+        max_cap=max_cap,
+        withdrawn=withdrawn,
+        available_limit=available_limit,
+        active_plan=active_plan,
+        current_rank=current_rank
     )
     bot.send_message(message.chat.id, text, parse_mode="HTML")
 
-@bot.message_handler(func=lambda m: m.text == "🏆 Ranks & Royalty")
+@bot.message_handler(func=lambda m: m.text in [translations[l]["btn_ranks"] for l in translations])
 def team_ranks(message):
     user_id = message.from_user.id
+    lang = get_user_language(user_id)
     try:
         check_and_update_rank(user_id)
     except Exception as e:
@@ -799,16 +1162,16 @@ def team_ranks(message):
 
         is_strongest_met = highest_leg >= req_strongest
         strongest_rem = 0 if is_strongest_met else max(0, req_strongest - highest_leg)
-        strongest_icon = "✅" if is_strongest_met else f"❌ (Need {strongest_rem:.2f} SOL more)"
+        strongest_icon = f"✅" if is_strongest_met else f"❌ (Need {strongest_rem:.2f} SOL more)"
 
         is_other_met = other_legs_total >= req_other
         other_rem = 0 if is_other_met else max(0, req_other - other_legs_total)
-        other_icon = "✅" if is_other_met else f"❌ (Need {other_rem:.2f} SOL more)"
+        other_icon = f"✅" if is_other_met else f"❌ (Need {other_rem:.2f} SOL more)"
 
         total_volume = highest_leg + other_legs_total
         is_total_met = total_volume >= target
         total_rem = 0 if is_total_met else max(0, target - total_volume)
-        total_icon = "✅" if is_total_met else f"❌ (Need {total_rem:.2f} SOL more)"
+        total_icon = f"✅" if is_total_met else f"❌ (Need {total_rem:.2f} SOL more)"
     else:
         next_rank_name = "Max Rank Achieved 🎉"
         strongest_icon = "✅"
@@ -817,19 +1180,25 @@ def team_ranks(message):
         req_strongest = 0
         req_other = 0
         target = 0
+        total_volume = highest_leg + other_legs_total
 
-    text = (
-        f"🏆 <b>Ranks & Royalty Status</b>\n\n"
-        f"<b>• Total Directs:</b> <code>{directs_count}</code> (Active: <code>{active_directs}</code>)\n"
-        f"<b>• Direct Business:</b> <code>{direct_biz:.2f} SOL</code>\n"
-        f"<b>• Total Team Business:</b> <code>{team_biz:.2f} SOL</code>\n"
-        f"<b>• Current Rank:</b> <code>{current_rank_name}</code>\n"
-        f"<b>• Next Rank:</b> <code>{next_rank_name}</code>\n\n"
-        f"<b>🎯 Progress for Next Rank:</b>\n"
-        f"<b>• Total Target ({target} SOL):</b> {total_icon} (Current: {highest_leg + other_legs_total:.2f})\n\n"
-        f"<b>• Leg Requirements Check:</b>\n"
-        f"<b> - Strongest Leg (Min {req_strongest} SOL):</b> {strongest_icon} (Current: <code>{highest_leg:.2f}</code>)\n"
-        f"<b> - Other Legs Combined (Min {req_other} SOL):</b> {other_icon} (Current: <code>{other_legs_total:.2f}</code>)\n"
+    template = translations.get(lang, translations["en"]).get("ranks_text", translations["en"]["ranks_text"])
+    text = template.format(
+        directs_count=directs_count,
+        active_directs=active_directs,
+        direct_biz=direct_biz,
+        team_biz=team_biz,
+        current_rank_name=current_rank_name,
+        next_rank_name=next_rank_name,
+        target=target,
+        total_icon=total_icon,
+        total_volume=total_volume,
+        req_strongest=req_strongest,
+        strongest_icon=strongest_icon,
+        highest_leg=highest_leg,
+        req_other=req_other,
+        other_icon=other_icon,
+        other_legs_total=other_legs_total
     )
     bot.send_message(message.chat.id, text, parse_mode="HTML")
 
@@ -1176,7 +1545,7 @@ def execute_broadcast(message):
         parse_mode="HTML"
     )
 
-@bot.message_handler(func=lambda m: m.text == "📜 Withdrawal History")
+@bot.message_handler(func=lambda m: m.text in [translations[l]["btn_history"] for l in translations])
 def withdrawal_history(message):
     user_id = message.from_user.id
     lang = get_user_language(user_id)
@@ -1196,7 +1565,7 @@ def withdrawal_history(message):
         text += f"• <code>{amt:.4f} SOL</code> | Status: <b>{status}</b>\n  🔗 <b>TxID:</b> <code>{escape(txid)}</code>\n  🕒 <code>{date}</code>\n\n"
     bot.send_message(message.chat.id, text, parse_mode="HTML")
 
-@bot.message_handler(func=lambda m: m.text and m.text.strip() in ["🎁 Withdraw", "Withdraw"])
+@bot.message_handler(func=lambda m: m.text and any(translations[l]["btn_withdraw"] in m.text for l in translations))
 def withdraw_start(message):
     user_id = message.from_user.id
     lang = get_user_language(user_id)
@@ -1286,7 +1655,7 @@ def admin_pay(message):
     except Exception as e:
       bot.send_message(ADMIN_ID, f"Error: {e}", parse_mode="HTML")
 
-@bot.message_handler(func=lambda m: m.text == "👥 Team Members")
+@bot.message_handler(func=lambda m: m.text in [translations[l]["btn_team"] for l in translations])
 def my_team_handler(message):
     user_id = message.from_user.id
     lang = get_user_language(user_id)
@@ -1351,7 +1720,7 @@ def callback_view_level(call):
     bot.answer_callback_query(call.id)
     bot.send_message(call.message.chat.id, text[:4000], parse_mode="HTML")
 
-@bot.message_handler(func=lambda m: m.text == "🔗 Referral Link")
+@bot.message_handler(func=lambda m: m.text in [translations[l]["btn_ref"] for l in translations])
 def referral_link_handler(message):
     user_id = message.from_user.id
     lang = get_user_language(user_id)
