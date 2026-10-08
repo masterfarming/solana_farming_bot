@@ -1781,7 +1781,7 @@ def roi_worker():
         except Exception as e:
             print(f">>> DEBUG: ROI Worker Error -> {e}")
 
-        time.sleep(300)
+        time.sleep(86400)
 
 if __name__ == "__main__":
     Thread(target=roi_worker, daemon=True).start()
