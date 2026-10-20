@@ -1478,37 +1478,65 @@ def process_withdrawal_address(message, amount):
     today_date = datetime.now().strftime("%Y-%m-%d")
     conn = get_db()
     conn.execute("UPDATE users SET last_withdrawal_date = ? WHERE user_id = ?", (today_date, user_id))
-    
+    conn.commit()
+
     payout_amount = round(amount * 0.90, 4)
     fee_amount = round(amount * 0.10, 4)
 
-    cursor = conn.cursor()
-    cursor.execute(
-        "INSERT INTO withdrawals (user_id, amount, wallet_address, txid, status) VALUES (?, ?, ?, 'Pending', 'Pending')",
-        (user_id, amount, wallet_address),
-    )
-    request_id = cursor.lastrowid
-    conn.commit()
-    conn.close()
+    # --- 0.01 SE 0.10 SOL TAK INSTANT AUTO-WITHDRAWAL ---
+    if 0.01 <= amount <= 0.10:
+        bot.send_message(message.chat.id, f"⏳ Processing instant withdrawal of <code>{amount:.4f} SOL</code> (Net Payout: <code>{payout_amount:.4f} SOL</code>)...", parse_mode="HTML")
 
-    proc_msg = get_translated_text(user_id, "withdraw_processing", amount=amount)
-    bot.send_message(message.chat.id, proc_msg, parse_mode="HTML")
+        success, tx_hash_or_err = send_sol_payout(wallet_address, payout_amount)
 
-    admin_msg = (
-        f"🚨 <b>New Withdrawal Request</b>\n\n"
-        f"User: <code>{user_id}</code>\n"
-        f"Requested Amt: <code>{amount:.4f} SOL</code>\n"
-        f"Fee (10%): <code>{fee_amount:.4f} SOL</code>\n"
-        f"👉 <b>Net Send to User:</b> <code>{payout_amount:.4f} SOL</code>\n"
-        f"Wallet:\n<code>{wallet_address}</code>\n"
-    )
-    
-    markup = InlineKeyboardMarkup(row_width=2)
-    markup.add(
-        InlineKeyboardButton("✅ Approve", callback_data=f"app_wd:{request_id}"),
-        InlineKeyboardButton("❌ Reject", callback_data=f"rej_wd:{request_id}"),
-    )
-    bot.send_message(ADMIN_ID, admin_msg, reply_markup=markup, parse_mode="HTML")
+        if success:
+            conn.execute(
+                "UPDATE users SET balance = balance - ?, total_withdrawn = total_withdrawn + ? WHERE user_id = ?",
+                (amount, amount, user_id)
+            )
+            conn.execute(
+                "INSERT INTO withdrawals (user_id, amount, wallet_address, txid, status) VALUES (?, ?, ?, ?, 'Paid')",
+                (user_id, amount, wallet_address, tx_hash_or_err)
+            )
+            conn.commit()
+            conn.close()
+
+            succ_msg = get_translated_text(user_id, "withdraw_success_user", amount=amount, txid=tx_hash_or_err)
+            bot.send_message(message.chat.id, succ_msg, parse_mode="HTML")
+        else:
+            conn.close()
+            bot.send_message(message.chat.id, f"⚠️ Auto-withdrawal failed! Error: {tx_hash_or_err}", parse_mode="HTML")
+
+    # --- 0.10 SOL SE BADE WITHDRAWALS KE LIYE ADMIN APPROVAL ---
+    elif amount > 0.10:
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO withdrawals (user_id, amount, wallet_address, txid, status) VALUES (?, ?, ?, 'Pending', 'Pending')",
+            (user_id, amount, wallet_address),
+        )
+        request_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+
+        proc_msg = get_translated_text(user_id, "withdraw_processing", amount=amount)
+        bot.send_message(message.chat.id, proc_msg, parse_mode="HTML")
+
+        admin_msg = (
+            f"🚨 <b>New Withdrawal Request</b>\n\n"
+            f"User: <code>{user_id}</code>\n"
+            f"Requested Amt: <code>{amount:.4f} SOL</code>\n"
+            f"Fee (10%): <code>{fee_amount:.4f} SOL</code>\n"
+            f"👉 <b>Net Send to User:</b> <code>{payout_amount:.4f} SOL</code>\n"
+            f"Wallet:\n<code>{wallet_address}</code>\n"
+        )
+        
+        markup = InlineKeyboardMarkup(row_width=2)
+        markup.add(
+            InlineKeyboardButton("✅ Approve", callback_data=f"app_wd:{request_id}"),
+            InlineKeyboardButton("❌ Reject", callback_data=f"rej_wd:{request_id}"),
+        )
+        bot.send_message(ADMIN_ID, admin_msg, reply_markup=markup, parse_mode="HTML")
+
 
 @bot.callback_query_handler(func=lambda call: call.data and call.data.startswith(("app_wd:", "rej_wd:")))
 def handle_withdrawal_approval(call):
