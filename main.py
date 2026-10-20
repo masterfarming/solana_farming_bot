@@ -72,13 +72,12 @@ def send_sol_payout(to_pubkey_str, amount_in_sol):
                     ADMIN_ID,
                     f"🚨 <b>WARNING: Low Admin Wallet Balance!</b>\n\n"
                     f"• Required Payout: {amount_in_sol} SOL\n"
-                    f"• Available Balance: {sol_balance} SOL\n\n"
-                    f"⚠️ Please top up the payout wallet immediately.",
+                    f"• Available Balance: {sol_balance} SOL",
                     parse_mode="HTML"
                 )
             except Exception:
                 pass
-            return False, f"Insufficient wallet balance. Available: {sol_balance} SOL"
+            return False, f"Insufficient wallet balance ({sol_balance} SOL)"
 
         to_pubkey = Pubkey.from_string(to_pubkey_str)
         lamports = int(amount_in_sol * 1_000_000_000)
@@ -91,45 +90,23 @@ def send_sol_payout(to_pubkey_str, amount_in_sol):
             )
         )
         
+        # Solana-py ka standard high-level Transaction use karte hain
+        from solana.transaction import Transaction
+        
         res = solana_client.get_latest_blockhash()
         recent_blockhash = res.value.blockhash
 
-        # --- ERROR-FREE TRANSACTION BUILD (SOLDERS COMPATIBLE) ---
-        from solders.hash import Hash
-        blockhash_obj = Hash.from_string(str(recent_blockhash))
-        
-        # Modern constructor jo solders ke har version me chalta hai
-        txn = Transaction(
-            from_pubkeys=[payer.pubkey()],
-            to=to_pubkey, # fallback or standard depending on version, let's use Message directly
-        ) if hasattr(Transaction, '__init__') else None
+        txn = Transaction()
+        txn.add(instruction)
+        txn.recent_blockhash = recent_blockhash
+        txn.fee_payer = payer.pubkey()
 
-        # Agar upar wala fail ho, toh yeh sabse safe message constructor hai:
-        msg = Message.new_with_blockhash(
-            [instruction],
-            payer.pubkey(),
-            blockhash_obj
-        )
-        txn = Transaction.new_unsigned(msg)
-        txn.sign([payer], blockhash_obj)
-        
-        result = solana_client.send_transaction(txn)
+        # Direct client send method with keypair
+        result = solana_client.send_transaction(txn, payer)
         return True, str(result.value)
 
     except Exception as e:
-        # Fallback agar Hash.from_string me bhi issue ho
-        try:
-            msg = Message.new_with_blockhash(
-                [instruction],
-                payer.pubkey(),
-                recent_blockhash
-            )
-            txn = Transaction.new_unsigned(msg)
-            txn.sign([payer], recent_blockhash)
-            result = solana_client.send_transaction(txn)
-            return True, str(result.value)
-        except Exception as inner_e:
-            return False, str(inner_e)
+        return False, str(e)
 
 # --- PACKAGES ---
 PACKAGES = {
