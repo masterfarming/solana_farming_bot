@@ -90,13 +90,12 @@ def send_sol_payout(to_pubkey_str, amount_in_sol):
         res = solana_client.get_latest_blockhash()
         recent_blockhash = res.value.blockhash
 
-        # --- CORRECT SOLDERS TRANSACTION SIGNING ---
-        txn = Transaction.new_signed_with_payer(
-            [instruction],          # 1. Instructions list
-            payer.pubkey(),         # 2. Payer Pubkey
-            [payer],                # 3. Signers list (Keypair)
-            recent_blockhash        # 4. Blockhash
+        # --- BULLETPROOF SOLDERS TRANSACTION BUILD & SIGN ---
+        txn = Transaction.new_with_payer(
+            [instruction],
+            payer.pubkey()
         )
+        txn.sign([payer], recent_blockhash)
         
         result = solana_client.send_transaction(txn)
         return True, str(result.value)
