@@ -94,12 +94,20 @@ def send_sol_payout(to_pubkey_str, amount_in_sol):
             res = solana_client.get_latest_blockhash()
             recent_blockhash = res.value.blockhash
 
-            txn = Transaction.new_signed_with_payer(
+            # --- MODERN SOLDERS MESSAGE & TRANSACTION COMPILE ---
+            from solders.message import Message
+            msg = Message.new_with_blockhash(
                 [instruction],
                 payer.pubkey(),
-                [payer],
                 recent_blockhash
             )
+            txn = Transaction.new_signed_with_payer(
+                [payer],
+                payer.pubkey(),
+                msg,
+                recent_blockhash
+            )
+            
             result = solana_client.send_transaction(txn)
             return True, str(result.value)
         except Exception as e:
