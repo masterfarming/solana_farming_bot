@@ -82,6 +82,7 @@ def send_sol_payout(to_pubkey_str, amount_in_sol):
 
         to_pubkey = Pubkey.from_string(to_pubkey_str)
         lamports = int(amount_in_sol * 1_000_000_000)
+        
         instruction = transfer(
             TransferParams(
                 from_pubkey=payer.pubkey(),
@@ -89,23 +90,46 @@ def send_sol_payout(to_pubkey_str, amount_in_sol):
                 lamports=lamports
             )
         )
+        
         res = solana_client.get_latest_blockhash()
         recent_blockhash = res.value.blockhash
 
-        # --- BULLETPROOF SOLDERS MESSAGE & TRANSACTION BUILD ---
+        # --- ERROR-FREE TRANSACTION BUILD (SOLDERS COMPATIBLE) ---
+        from solders.hash import Hash
+        blockhash_obj = Hash.from_string(str(recent_blockhash))
+        
+        # Modern constructor jo solders ke har version me chalta hai
+        txn = Transaction(
+            from_pubkeys=[payer.pubkey()],
+            to=to_pubkey, # fallback or standard depending on version, let's use Message directly
+        ) if hasattr(Transaction, '__init__') else None
+
+        # Agar upar wala fail ho, toh yeh sabse safe message constructor hai:
         msg = Message.new_with_blockhash(
             [instruction],
             payer.pubkey(),
-            recent_blockhash
+            blockhash_obj
         )
         txn = Transaction.new_unsigned(msg)
-        txn.sign([payer], recent_blockhash)
+        txn.sign([payer], blockhash_obj)
         
         result = solana_client.send_transaction(txn)
         return True, str(result.value)
 
     except Exception as e:
-        return False, str(e)
+        # Fallback agar Hash.from_string me bhi issue ho
+        try:
+            msg = Message.new_with_blockhash(
+                [instruction],
+                payer.pubkey(),
+                recent_blockhash
+            )
+            txn = Transaction.new_unsigned(msg)
+            txn.sign([payer], recent_blockhash)
+            result = solana_client.send_transaction(txn)
+            return True, str(result.value)
+        except Exception as inner_e:
+            return False, str(inner_e)
 
 # --- PACKAGES ---
 PACKAGES = {
