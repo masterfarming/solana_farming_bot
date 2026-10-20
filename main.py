@@ -52,6 +52,7 @@ def get_admin_keypair():
         return None
     secret_bytes = base58.b58decode(WALLET_PRIVATE_KEY_STR)
     return Keypair.from_bytes(secret_bytes)
+
 def send_sol_payout(to_pubkey_str, amount_in_sol):
     try:
         payer = get_admin_keypair()
@@ -1404,7 +1405,7 @@ def withdraw_start(message):
 
     if user_row and user_row[0] == today_date:
         conn.close()
-        bot.send_message(message.chat.id, "❌ <b>Aap aaj ka withdrawal le chuke hain!</b>\n\nEk din me keval 1 hi withdrawal allowed hai. Kripya kal dobara try karein.", parse_mode="HTML")
+        bot.send_message(message.chat.id, "❌ <b>Daily Withdrawal Limit Reached!</b>\n\nYou can only request 1 withdrawal per day. Please try again tomorrow.", parse_mode="HTML")
         return
 
     sum_row = conn.execute("SELECT COALESCE(SUM(amount), 0) FROM withdrawals WHERE user_id = ? AND created_at LIKE ? AND status IN ('Paid', 'Pending', 'APPROVED')", (user_id, f"{today_date}%")).fetchone()
