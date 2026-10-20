@@ -14,6 +14,7 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeybo
 from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 from solders.system_program import transfer, TransferParams
+from solders.message import Message
 from solders.transaction import Transaction
 from solana.rpc.api import Client
 
@@ -53,6 +54,7 @@ def get_admin_keypair():
     secret_bytes = base58.b58decode(WALLET_PRIVATE_KEY_STR)
     return Keypair.from_bytes(secret_bytes)
 
+# --- BULLETPROOF SOLDERS ERROR-FREE PAYOUT FUNCTION ---
 def send_sol_payout(to_pubkey_str, amount_in_sol):
     try:
         payer = get_admin_keypair()
@@ -90,11 +92,13 @@ def send_sol_payout(to_pubkey_str, amount_in_sol):
         res = solana_client.get_latest_blockhash()
         recent_blockhash = res.value.blockhash
 
-        # --- BULLETPROOF SOLDERS TRANSACTION BUILD & SIGN ---
-        txn = Transaction.new_with_payer(
+        # --- BULLETPROOF SOLDERS MESSAGE & TRANSACTION BUILD ---
+        msg = Message.new_with_blockhash(
             [instruction],
-            payer.pubkey()
+            payer.pubkey(),
+            recent_blockhash
         )
+        txn = Transaction.new_unsigned(msg)
         txn.sign([payer], recent_blockhash)
         
         result = solana_client.send_transaction(txn)
@@ -1455,7 +1459,7 @@ def process_withdrawal_amount(message):
     msg = bot.send_message(message.chat.id, "Enter your Solana <b>Wallet Address</b>:", parse_mode="HTML")
     bot.register_next_step_handler(msg, process_withdrawal_address, amount)
 
-# --- TIERED WITHDRAWAL & 10% FEE LOGIC ---
+# --- UNIFIED ADMIN APPROVAL FLOW FOR ALL WITHDRAWALS ---
 def process_withdrawal_address(message, amount):
     wallet_address = message.text.strip()
     user_id = message.from_user.id
@@ -1463,64 +1467,37 @@ def process_withdrawal_address(message, amount):
     today_date = datetime.now().strftime("%Y-%m-%d")
     conn = get_db()
     conn.execute("UPDATE users SET last_withdrawal_date = ? WHERE user_id = ?", (today_date, user_id))
-    conn.commit()
-
+    
     payout_amount = round(amount * 0.90, 4)
     fee_amount = round(amount * 0.10, 4)
 
-    if 0.01 <= amount <= 0.10:
-        bot.send_message(message.chat.id, f"⏳ Processing instant withdrawal of <code>{amount:.4f} SOL</code> (Net Payout: <code>{payout_amount:.4f} SOL</code>)...", parse_mode="HTML")
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO withdrawals (user_id, amount, wallet_address, txid, status) VALUES (?, ?, ?, 'Pending', 'Pending')",
+        (user_id, amount, wallet_address),
+    )
+    request_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
 
-        success, tx_hash_or_err = send_sol_payout(wallet_address, payout_amount)
+    proc_msg = get_translated_text(user_id, "withdraw_processing", amount=amount)
+    bot.send_message(message.chat.id, proc_msg, parse_mode="HTML")
 
-        if success:
-            conn.execute(
-                "UPDATE users SET balance = balance - ?, total_withdrawn = total_withdrawn + ? WHERE user_id = ?",
-                (amount, amount, user_id)
-            )
-            conn.execute(
-                "INSERT INTO withdrawals (user_id, amount, wallet_address, txid, status) VALUES (?, ?, ?, ?, 'Paid')",
-                (user_id, amount, wallet_address, tx_hash_or_err)
-            )
-            conn.commit()
-            conn.close()
-
-            succ_msg = get_translated_text(user_id, "withdraw_success_user", amount=amount, txid=tx_hash_or_err)
-            bot.send_message(message.chat.id, succ_msg, parse_mode="HTML")
-        else:
-            conn.close()
-            bot.send_message(message.chat.id, f"⚠️ Auto-withdrawal failed! Error: {tx_hash_or_err}", parse_mode="HTML")
-
-    elif amount > 0.10:
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO withdrawals (user_id, amount, wallet_address, txid, status) VALUES (?, ?, ?, 'Pending', 'Pending')",
-            (user_id, amount, wallet_address),
-        )
-        request_id = cursor.lastrowid
-        conn.commit()
-        conn.close()
-
-        proc_msg = get_translated_text(user_id, "withdraw_processing", amount=amount)
-        bot.send_message(message.chat.id, proc_msg, parse_mode="HTML")
-
-        admin_msg = (
-            f"🚨 <b>Withdrawal Request</b>\n\n"
-            f"User: <code>{user_id}</code>\n"
-            f"Requested Amt: <code>{amount:.4f} SOL</code>\n"
-            f"Fee (10%): <code>{fee_amount:.4f} SOL</code>\n"
-            f"👉 <b>Net Send to User:</b> <code>{payout_amount:.4f} SOL</code>\n"
-            f"Wallet:\n<code>{wallet_address}</code>\n\n"
-            f"Command to Pay:\n"
-            f"<code>/pay {user_id} {payout_amount:.4f} [TxID]</code>"
-        )
-        
-        markup = InlineKeyboardMarkup(row_width=2)
-        markup.add(
-            InlineKeyboardButton("✅ Approve", callback_data=f"app_wd:{request_id}"),
-            InlineKeyboardButton("❌ Reject", callback_data=f"rej_wd:{request_id}"),
-        )
-        bot.send_message(ADMIN_ID, admin_msg, reply_markup=markup, parse_mode="HTML")
+    admin_msg = (
+        f"🚨 <b>New Withdrawal Request</b>\n\n"
+        f"User: <code>{user_id}</code>\n"
+        f"Requested Amt: <code>{amount:.4f} SOL</code>\n"
+        f"Fee (10%): <code>{fee_amount:.4f} SOL</code>\n"
+        f"👉 <b>Net Send to User:</b> <code>{payout_amount:.4f} SOL</code>\n"
+        f"Wallet:\n<code>{wallet_address}</code>\n"
+    )
+    
+    markup = InlineKeyboardMarkup(row_width=2)
+    markup.add(
+        InlineKeyboardButton("✅ Approve", callback_data=f"app_wd:{request_id}"),
+        InlineKeyboardButton("❌ Reject", callback_data=f"rej_wd:{request_id}"),
+    )
+    bot.send_message(ADMIN_ID, admin_msg, reply_markup=markup, parse_mode="HTML")
 
 @bot.callback_query_handler(func=lambda call: call.data and call.data.startswith(("app_wd:", "rej_wd:")))
 def handle_withdrawal_approval(call):
@@ -1553,7 +1530,7 @@ def handle_withdrawal_approval(call):
     user_id = req["user_id"]
     amount = req["amount"]
     wallet_address = req["wallet_address"]
-    payout_amount = amount * 0.90
+    payout_amount = round(amount * 0.90, 4)
 
     if action == "app_wd":
         bot.edit_message_text(
@@ -1600,7 +1577,7 @@ def handle_withdrawal_approval(call):
         conn.commit()
         conn.close()
 
-        bot.send_message(user_id, f"❌ Aapka withdrawal request (<code>{amount:.4f} SOL</code>) reject kar diya gaya hai.", parse_mode="HTML")
+        bot.send_message(user_id, f"❌ Aapka withdrawal request (<code>{amount:.4f} SOL</code>) reject kar diya गया hai.", parse_mode="HTML")
         bot.edit_message_text(
             text=call.message.text + "\n\n❌ <b>REJECTED BY ADMIN</b>",
             chat_id=call.message.chat.id,
