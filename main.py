@@ -15,7 +15,7 @@ from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 from solders.system_program import transfer, TransferParams
 from solders.transaction import Transaction
-from solana.rpc.client import Client
+from solana.client import Client
 
 app = Flask("")
 
