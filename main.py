@@ -90,18 +90,12 @@ def send_sol_payout(to_pubkey_str, amount_in_sol):
         res = solana_client.get_latest_blockhash()
         recent_blockhash = res.value.blockhash
 
-        # --- MODERN SOLDERS MESSAGE & TRANSACTION COMPILE ---
-        from solders.message import Message
-        msg = Message.new_with_blockhash(
-            [instruction],
-            payer.pubkey(),
-            recent_blockhash
-        )
+        # --- CORRECT SOLDERS TRANSACTION SIGNING ---
         txn = Transaction.new_signed_with_payer(
-            [payer],
-            payer.pubkey(),
-            msg,
-            recent_blockhash
+            [instruction],          # 1. Instructions list
+            payer.pubkey(),         # 2. Payer Pubkey
+            [payer],                # 3. Signers list (Keypair)
+            recent_blockhash        # 4. Blockhash
         )
         
         result = solana_client.send_transaction(txn)
