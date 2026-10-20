@@ -60,58 +60,53 @@ def send_sol_payout(to_pubkey_str, amount_in_sol):
             return False, "WALLET_ERROR"
 
         # --- CHECK PAYER WALLET BALANCE ---
-        try:
-            balance_response = solana_client.get_balance(payer.pubkey())
-            lamports_balance = balance_response.value
-            sol_balance = lamports_balance / 1_000_000_000
+        balance_response = solana_client.get_balance(payer.pubkey())
+        lamports_balance = balance_response.value
+        sol_balance = lamports_balance / 1_000_000_000
 
-            if sol_balance < amount_in_sol:
-                try:
-                    bot.send_message(
-                        ADMIN_ID,
-                        f"🚨 <b>WARNING: Low Admin Wallet Balance!</b>\n\n"
-                        f"• Required Payout: {amount_in_sol} SOL\n"
-                        f"• Available Balance: {sol_balance} SOL\n\n"
-                        f"⚠️ Please top up the payout wallet immediately.",
-                        parse_mode="HTML"
-                    )
-                except Exception:
-                    pass
-                return False, f"Insufficient wallet balance. Available: {sol_balance} SOL"
-        except Exception as bal_err:
-            print(f"Balance check error: {bal_err}")
-
-        try:
-            to_pubkey = Pubkey.from_string(to_pubkey_str)
-            lamports = int(amount_in_sol * 1_000_000_000)
-            instruction = transfer(
-                TransferParams(
-                    from_pubkey=payer.pubkey(),
-                    to_pubkey=to_pubkey,
-                    lamports=lamports
+        if sol_balance < amount_in_sol:
+            try:
+                bot.send_message(
+                    ADMIN_ID,
+                    f"🚨 <b>WARNING: Low Admin Wallet Balance!</b>\n\n"
+                    f"• Required Payout: {amount_in_sol} SOL\n"
+                    f"• Available Balance: {sol_balance} SOL\n\n"
+                    f"⚠️ Please top up the payout wallet immediately.",
+                    parse_mode="HTML"
                 )
-            )
-            res = solana_client.get_latest_blockhash()
-            recent_blockhash = res.value.blockhash
+            except Exception:
+                pass
+            return False, f"Insufficient wallet balance. Available: {sol_balance} SOL"
 
-            # --- MODERN SOLDERS MESSAGE & TRANSACTION COMPILE ---
-            from solders.message import Message
-            msg = Message.new_with_blockhash(
-                [instruction],
-                payer.pubkey(),
-                recent_blockhash
+        to_pubkey = Pubkey.from_string(to_pubkey_str)
+        lamports = int(amount_in_sol * 1_000_000_000)
+        instruction = transfer(
+            TransferParams(
+                from_pubkey=payer.pubkey(),
+                to_pubkey=to_pubkey,
+                lamports=lamports
             )
-            txn = Transaction.new_signed_with_payer(
-                [payer],
-                payer.pubkey(),
-                msg,
-                recent_blockhash
-            )
-            
-            result = solana_client.send_transaction(txn)
-            return True, str(result.value)
-        except Exception as e:
-            return False, str(e)
+        )
+        res = solana_client.get_latest_blockhash()
+        recent_blockhash = res.value.blockhash
+
+        # --- MODERN SOLDERS MESSAGE & TRANSACTION COMPILE ---
+        from solders.message import Message
+        msg = Message.new_with_blockhash(
+            [instruction],
+            payer.pubkey(),
+            recent_blockhash
+        )
+        txn = Transaction.new_signed_with_payer(
+            [payer],
+            payer.pubkey(),
+            msg,
+            recent_blockhash
+        )
+        
+        result = solana_client.send_transaction(txn)
+        return True, str(result.value)
+
     except Exception as e:
         return False, str(e)
 
