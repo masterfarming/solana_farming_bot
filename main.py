@@ -81,31 +81,27 @@ def send_sol_payout(to_pubkey_str: str, amount_in_sol: float):
         except Exception as bal_err:
             print(f"Balance check error: {bal_err}")
 
-            try:
+        try:
         to_pubkey = Pubkey.from_string(to_pubkey_str)
         lamports = int(amount_in_sol * 1_000_000_000)
-
-   instruction = transfer(
-        TransferParams(
-            from_pubkey=payer.pubkey(),
-            to_pubkey=to_pubkey,
-            lamports=lamports
-        ) 
-    )
-    res = solana_client.get_latest_blockhash()
-    hb = res.value
-    recent_blockhash = hb.blockhash
-    
-    txn = Transaction()
-    txn.add(instruction)
-    txn.recent_blockhash = recent_blockhash
-    txn.sign([payer])
-    
-    result = solana_client.send_transaction(txn)
-    return True, str(result.value)
-except Exception as e:
-    return False, str(e)
-
+        instruction = transfer(
+            TransferParams(
+                from_pubkey=payer.pubkey(),
+                to_pubkey=to_pubkey,
+                lamports=lamports
+            )
+        )
+        res = solana_client.get_latest_blockhash()
+        hb = res.value
+        recent_blockhash = hb.blockhash
+        txn = Transaction()
+        txn.add(instruction)
+        txn.recent_blockhash = recent_blockhash
+        txn.sign([payer])
+        result = solana_client.send_transaction(txn)
+        return True, str(result.value)
+    except Exception as e:
+        return False, str(e)
 
 # --- PACKAGES ---
 PACKAGES = {
