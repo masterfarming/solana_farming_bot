@@ -52,7 +52,7 @@ def get_admin_keypair():
         return None
     secret_bytes = base58.b58decode(WALLET_PRIVATE_KEY_STR)
     return Keypair.from_bytes(secret_bytes)
-    
+
 def send_sol_payout(to_pubkey_str, amount_in_sol):
     try:
         payer = get_admin_keypair()
@@ -94,10 +94,13 @@ def send_sol_payout(to_pubkey_str, amount_in_sol):
             res = solana_client.get_latest_blockhash()
             hb = res.value
             recent_blockhash = hb.blockhash
-            txn = Transaction()
-            txn.add(instruction)
-            txn.recent_blockhash = recent_blockhash
-            txn.sign([payer])
+
+            txn = Transaction.new_signed_with_payer(
+                [instruction],
+                payer.pubkey(),
+                [payer],
+                recent_blockhash
+            )
             result = solana_client.send_transaction(txn)
             return True, str(result.value)
         except Exception as e:
