@@ -52,57 +52,56 @@ def get_admin_keypair():
         return None
     secret_bytes = base58.b58decode(WALLET_PRIVATE_KEY_STR)
     return Keypair.from_bytes(secret_bytes)
-
-def send_sol_payout(to_pubkey_str: str, amount_in_sol: float):
+    
+def send_sol_payout(to_pubkey_str, amount_in_sol):
     try:
         payer = get_admin_keypair()
         if not payer:
-            return False, "WALLET_PRIVATE_KEY not configured in Render environment variables."
-        
-        # --- CHECK PAYER WALLET BALANCE FIRST ---
+            return False, "WALLET_ERROR"
+
+        # --- CHECK PAYER WALLET BALANCE ---
         try:
             balance_response = solana_client.get_balance(payer.pubkey())
             lamports_balance = balance_response.value
             sol_balance = lamports_balance / 1_000_000_000
-            
-            if sol_balance < (amount_in_sol + 0.001):
+
+            if sol_balance < amount_in_sol:
                 try:
                     bot.send_message(
                         ADMIN_ID,
-                        f"🚨 <b>WARNING: Payout Wallet Low Balance!</b>\n\n"
-                        f"• Required Payout: <code>{amount_in_sol:.4f} SOL</code>\n"
-                        f"• Available Balance: <code>{sol_balance:.4f} SOL</code>\n\n"
-                        f"⚠️ Kripya Render wale Payout Wallet me SOL top-up karein taaki withdrawals pass ho sakein!",
+                        f"🚨 <b>WARNING: Low Wallet Balance!</b>\n"
+                        f"• Required Payout: {amount_in_sol} SOL\n"
+                        f"• Available Balance: {sol_balance} SOL\n"
+                        f"⚠️ Kripya Render par balance check karein.",
                         parse_mode="HTML"
                     )
                 except Exception:
                     pass
-                return False, f"Insufficient balance in payout wallet ({sol_balance:.4f} SOL available). Admin has been notified."
+                return False, f"Insufficient balance. Available: {sol_balance} SOL"
         except Exception as bal_err:
             print(f"Balance check error: {bal_err}")
 
-    try:
-        to_pubkey = Pubkey.from_string(to_pubkey_str)
-        lamports = int(amount_in_sol * 1_000_000_000)
-
-        instruction = transfer(
-            TransferParams(
-                from_pubkey=payer.pubkey(),
-                to_pubkey=to_pubkey,
-                lamports=lamports
+        try:
+            to_pubkey = Pubkey.from_string(to_pubkey_str)
+            lamports = int(amount_in_sol * 1_000_000_000)
+            instruction = transfer(
+                TransferParams(
+                    from_pubkey=payer.pubkey(),
+                    to_pubkey=to_pubkey,
+                    lamports=lamports
+                )
             )
-        )
-        res = solana_client.get_latest_blockhash()
-        hb = res.value
-        recent_blockhash = hb.blockhash
-
-        txn = Transaction()
-        txn.add(instruction)
-        txn.recent_blockhash = recent_blockhash
-        txn.sign([payer])
-
-        result = solana_client.send_transaction(txn)
-        return True, str(result.value)
+            res = solana_client.get_latest_blockhash()
+            hb = res.value
+            recent_blockhash = hb.blockhash
+            txn = Transaction()
+            txn.add(instruction)
+            txn.recent_blockhash = recent_blockhash
+            txn.sign([payer])
+            result = solana_client.send_transaction(txn)
+            return True, str(result.value)
+        except Exception as e:
+            return False, str(e)
     except Exception as e:
         return False, str(e)
 
