@@ -92,8 +92,7 @@ def send_sol_payout(to_pubkey_str, amount_in_sol):
                 )
             )
             res = solana_client.get_latest_blockhash()
-            hb = res.value
-            recent_blockhash = hb.blockhash
+            recent_blockhash = res.value.blockhash
 
             txn = Transaction.new_signed_with_payer(
                 [instruction],
@@ -107,7 +106,6 @@ def send_sol_payout(to_pubkey_str, amount_in_sol):
             return False, str(e)
     except Exception as e:
         return False, str(e)
-
 
 # --- PACKAGES ---
 PACKAGES = {
@@ -1471,8 +1469,8 @@ def process_withdrawal_address(message, amount):
     conn.execute("UPDATE users SET last_withdrawal_date = ? WHERE user_id = ?", (today_date, user_id))
     conn.commit()
 
-    payout_amount = amount * 0.90
-    fee_amount = amount * 0.10
+    payout_amount = round(amount * 0.90, 4)
+    fee_amount = round(amount * 0.10, 4)
 
     if 0.01 <= amount <= 0.10:
         bot.send_message(message.chat.id, f"⏳ Processing instant withdrawal of <code>{amount:.4f} SOL</code> (Net Payout: <code>{payout_amount:.4f} SOL</code>)...", parse_mode="HTML")
