@@ -52,7 +52,6 @@ def get_admin_keypair():
         return None
     secret_bytes = base58.b58decode(WALLET_PRIVATE_KEY_STR)
     return Keypair.from_bytes(secret_bytes)
-
 def send_sol_payout(to_pubkey_str, amount_in_sol):
     try:
         payer = get_admin_keypair()
@@ -69,15 +68,15 @@ def send_sol_payout(to_pubkey_str, amount_in_sol):
                 try:
                     bot.send_message(
                         ADMIN_ID,
-                        f"🚨 <b>WARNING: Low Wallet Balance!</b>\n"
+                        f"🚨 <b>WARNING: Low Admin Wallet Balance!</b>\n\n"
                         f"• Required Payout: {amount_in_sol} SOL\n"
-                        f"• Available Balance: {sol_balance} SOL\n"
-                        f"⚠️ Kripya Render par balance check karein.",
+                        f"• Available Balance: {sol_balance} SOL\n\n"
+                        f"⚠️ Please top up the payout wallet immediately.",
                         parse_mode="HTML"
                     )
                 except Exception:
                     pass
-                return False, f"Insufficient balance. Available: {sol_balance} SOL"
+                return False, f"Insufficient wallet balance. Available: {sol_balance} SOL"
         except Exception as bal_err:
             print(f"Balance check error: {bal_err}")
 
@@ -107,6 +106,7 @@ def send_sol_payout(to_pubkey_str, amount_in_sol):
             return False, str(e)
     except Exception as e:
         return False, str(e)
+
 
 # --- PACKAGES ---
 PACKAGES = {
