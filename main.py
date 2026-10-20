@@ -91,13 +91,14 @@ def send_sol_payout(to_pubkey_str: str, amount_in_sol: float):
                 lamports=lamports
             )
         )
-        recent_blockhash = solana_client.get_latest_blockhash().value.blockhash
-        txn = Transaction.new_signed_with_payer(
-            [instruction],
-            payer.pubkey(),
-            [payer],
-            recent_blockhash
-        )
+        res = solana_client.get_latest_blockhash()
+        recent_blockhash = res.value.blockhash if hasattr(res.value, 'blockhash') else res.value
+    
+        txn = Transaction()
+        txn.add(instruction)
+        txn.recent_blockhash = recent_blockhash
+        txn.sign([payer]
+
         result = solana_client.send_transaction(txn)
         return True, str(result.value)
     except Exception as e:
